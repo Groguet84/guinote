@@ -68,6 +68,7 @@ void main() {
     test('con 101 puntos (51 buenas) se gana', () {
       final p = partida(0, 0, manos: 0).registrarMano(resultado(91, 29));
       expect(p.ganador, 0);
+      expect(p.deVueltas, isFalse, reason: 'ya no se juegan más manos');
     });
 
     test('se puede ganar en la primera mano', () {

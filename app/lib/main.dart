@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
+import 'src/mesa/pantalla_mesa.dart';
+
 void main() => runApp(const GuinoteApp());
 
 class GuinoteApp extends StatelessWidget {
-  const GuinoteApp({super.key});
+  const GuinoteApp({super.key, this.mesa = const PantallaMesa()});
+
+  /// La mesa a mostrar; los tests pasan una con un controlador propio.
+  final Widget mesa;
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +16,7 @@ class GuinoteApp extends StatelessWidget {
       title: 'Guiñote',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(colorSchemeSeed: const Color(0xFF1B5E20)),
-      home: const Scaffold(body: Center(child: Text('Guiñote'))),
+      home: mesa,
     );
   }
 }

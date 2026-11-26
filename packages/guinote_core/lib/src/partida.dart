@@ -37,8 +37,9 @@ final class Partida {
 
   bool get terminada => ganador != null;
 
-  /// La próxima mano es «de vueltas» (ya se ha jugado al menos una).
-  bool get deVueltas => manosJugadas > 0;
+  /// La próxima mano es «de vueltas»: ya se ha jugado al menos una y
+  /// nadie ha ganado.
+  bool get deVueltas => manosJugadas > 0 && !terminada;
 
   static int malasDe(int puntos) => min(puntos, malas);
 

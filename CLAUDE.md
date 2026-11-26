@@ -36,13 +36,16 @@ cd packages/guinote_core && dart pub get && dart analyze && dart test
 cd app && flutter pub get && flutter analyze && flutter test
 flutter run -d chrome          # web
 flutter build apk              # Android
+# Capturas del README (docs/capturas/), con fuentes reales y tiempo simulado
+flutter test --dart-define=CAPTURAS=true test/capturas
 ```
+- Para ver la interfaz, usa las capturas de `test/capturas`, no Chromium en modo headless: su reloj virtual congela las animaciones y su ventana tiene un ancho mínimo de unos 500 px.
 
 ## Fases
 0. Esqueleto: repo, estructura, lints, CI ✓
 1. Motor de reglas y tests ✓
 2. IA de los tres jugadores del ordenador ✓
-3. Interfaz de mesa
+3. Interfaz de mesa ✓
 4. Pulido: README con capturas, despliegue web, APK
 
 Se trabaja fase a fase y se espera la aprobación del usuario antes de empezar la siguiente.
