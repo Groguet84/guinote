@@ -10,21 +10,22 @@ String textoMalasBuenas(int puntos) => puntos <= Partida.malas
 
 const List<String> nombresParejas = ['Nosotros', 'Ellos'];
 
-/// Marcador de la partida, triunfo de la mano y menú.
+/// Marcador del coto y de la partida, triunfo de la mano y menú.
 class Marcador extends StatelessWidget {
   const Marcador({
     super.key,
-    required this.partida,
+    required this.coto,
     required this.triunfo,
-    required this.onNuevaPartida,
+    required this.onNuevoCoto,
   });
 
-  final Partida partida;
+  final Coto coto;
   final Palo triunfo;
-  final VoidCallback onNuevaPartida;
+  final VoidCallback onNuevoCoto;
 
   @override
   Widget build(BuildContext context) {
+    final partida = coto.partida;
     final estilo = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
@@ -43,6 +44,12 @@ class Marcador extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                Text(
+                  'Coto (al mejor de 3): '
+                  '${coto.partidasGanadas[0]} - ${coto.partidasGanadas[1]}',
+                  key: const ValueKey('marcador-coto'),
+                  style: const TextStyle(color: Color(0xFFFFD54F)),
+                ),
                 for (var p = 0; p < 2; p++)
                   Text.rich(
                     key: ValueKey('marcador-$p'),
@@ -80,8 +87,8 @@ class Marcador extends StatelessWidget {
               iconColor: Colors.white,
               itemBuilder: (_) => [
                 PopupMenuItem(
-                  onTap: onNuevaPartida,
-                  child: const Text('Nueva partida'),
+                  onTap: onNuevoCoto,
+                  child: const Text('Nuevo coto'),
                 ),
               ],
             ),

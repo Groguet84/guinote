@@ -90,32 +90,31 @@ class _PantallaMesaState extends State<PantallaMesa> {
       padding: const EdgeInsets.all(8),
       child: Column(
         children: [
-          // Marcador, compañero y mazo.
+          // Marcador y compañero, centrado respecto a la mesa.
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Marcador(
-                partida: _c.partida,
-                triunfo: mano.triunfo,
-                onNuevaPartida: _c.nuevaPartida,
-              ),
               Expanded(
-                child: Column(
-                  children: [
-                    ManoOculta(
-                      numero: mano.manos[2].length,
-                      ancho: anchoOculta,
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Marcador(
+                      coto: _c.coto,
+                      triunfo: mano.triunfo,
+                      onNuevoCoto: _c.nuevoCoto,
                     ),
-                    const SizedBox(height: 4),
-                    etiqueta(2),
-                  ],
+                  ),
                 ),
               ),
-              MazoYTriunfo(
-                cartaTriunfo: mano.cartaTriunfo,
-                cartasMazo: mano.mazo.length,
-                ancho: base * 0.8,
+              Column(
+                children: [
+                  ManoOculta(numero: mano.manos[2].length, ancho: anchoOculta),
+                  const SizedBox(height: 4),
+                  etiqueta(2),
+                ],
               ),
+              const Spacer(),
             ],
           ),
           // Rivales a los lados y la baza en el centro.
@@ -126,22 +125,49 @@ class _PantallaMesaState extends State<PantallaMesa> {
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, hueco) {
+                      // El mazo va junto a la baza: a su izquierda si la mesa
+                      // es apaisada y encima si es alargada (móvil).
+                      final apaisada = hueco.maxWidth > hueco.maxHeight * 1.2;
+                      final hayMazo = mano.cartasPorRobar > 0;
+                      final anchoMazo = base * 0.8;
+                      final mazo = MazoYTriunfo(
+                        cartaTriunfo: mano.cartaTriunfo,
+                        cartasMazo: mano.mazo.length,
+                        ancho: anchoMazo,
+                      );
+                      const separacion = 16.0;
+                      final libreAncho = hayMazo && apaisada
+                          ? hueco.maxWidth - mazo.tamano.width - separacion
+                          : hueco.maxWidth;
+                      final libreAlto = hayMazo && !apaisada
+                          ? hueco.maxHeight - mazo.tamano.height - separacion
+                          : hueco.maxHeight;
                       final ancho = [
-                        hueco.maxWidth / CentroMesa.anchosOcupados,
-                        hueco.maxHeight *
-                            proporcionCarta /
-                            CentroMesa.altosOcupados,
+                        libreAncho / CentroMesa.anchosOcupados,
+                        libreAlto * proporcionCarta / CentroMesa.altosOcupados,
                         base * 1.1,
                       ].reduce(math.min);
                       return Stack(
                         alignment: Alignment.center,
                         children: [
-                          CentroMesa(
-                            baza: mano.baza,
-                            ancho: ancho,
-                            ganador: mano.fase == Fase.jugando
-                                ? null
-                                : mano.ultimoGanador,
+                          Flex(
+                            direction: apaisada
+                                ? Axis.horizontal
+                                : Axis.vertical,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (hayMazo) ...[
+                                mazo,
+                                const SizedBox.square(dimension: separacion),
+                              ],
+                              CentroMesa(
+                                baza: mano.baza,
+                                ancho: ancho,
+                                ganador: mano.fase == Fase.jugando
+                                    ? null
+                                    : mano.ultimoGanador,
+                              ),
+                            ],
                           ),
                           Align(
                             alignment: Alignment.bottomCenter,
@@ -159,17 +185,29 @@ class _PantallaMesaState extends State<PantallaMesa> {
           // Tú.
           _Acciones(controlador: _c),
           const SizedBox(height: 6),
-          _EtiquetaJugador(
-            nombre: _c.turnoHumano ? 'Tú · te toca' : 'Tú',
-            activo: _c.turnoHumano,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _EtiquetaJugador(
+                nombre: _c.turnoHumano ? 'Tú · te toca' : 'Tú',
+                activo: _c.turnoHumano,
+              ),
+              IconButton(
+                tooltip: 'Ordenar por palos',
+                visualDensity: VisualDensity.compact,
+                color: Colors.white,
+                onPressed: _c.ordenarMano,
+                icon: const Icon(Icons.sort),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
           ManoHumano(
-            cartas: mano.manos[ControladorPartida.humano],
+            cartas: _c.manoHumano,
             jugables: _c.jugablesHumano,
             ancho: anchoHumano,
             anchoMaximo: tamano.width - 16,
             onJugar: _c.jugar,
+            onReordenar: _c.reordenar,
           ),
         ],
       ),
@@ -184,9 +222,9 @@ class _PantallaMesaState extends State<PantallaMesa> {
             child: SingleChildScrollView(
               child: ResumenMano(
                 resultado: resultado,
-                partida: _c.partida,
-                onSiguienteMano: _c.siguienteMano,
-                onNuevaPartida: _c.nuevaPartida,
+                coto: _c.coto,
+                onContinuar: _c.continuar,
+                onNuevoCoto: _c.nuevoCoto,
               ),
             ),
           ),

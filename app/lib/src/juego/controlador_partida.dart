@@ -4,12 +4,13 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:guinote_core/guinote_core.dart';
 
-/// Conecta el motor con la pantalla: guarda la partida y la mano en curso,
+/// Conecta el motor con la pantalla: guarda el coto y la mano en curso,
 /// hace jugar a la IA con pausas para que se vea y recoge las bazas solas.
+/// También guarda el orden en que el humano tiene colocadas sus cartas.
 ///
 /// El humano es siempre el jugador [humano] (abajo); su compañero es el 2.
 class ControladorPartida extends ChangeNotifier {
-  /// Empieza una partida nueva.
+  /// Empieza un coto nuevo.
   ControladorPartida({
     Random? random,
     this._ia = const Ia(),
@@ -18,15 +19,15 @@ class ControladorPartida extends ChangeNotifier {
     this.esperaAnuncio = const Duration(milliseconds: 2500),
     this.duracionAviso = const Duration(milliseconds: 3500),
   }) : _random = random ?? Random() {
-    _partida = Partida.nueva(_random);
+    _coto = Coto.nuevo(_random);
     _repartir();
   }
 
-  /// Continúa desde una partida y una mano dadas (para tests).
+  /// Continúa desde un coto y una mano dados (para tests).
   @visibleForTesting
   ControladorPartida.desde({
-    required this._partida,
-    required this._mano,
+    required this._coto,
+    required EstadoMano mano,
     Random? random,
     this._ia = const Ia(),
     this.retardoIa = const Duration(milliseconds: 900),
@@ -34,6 +35,8 @@ class ControladorPartida extends ChangeNotifier {
     this.esperaAnuncio = const Duration(milliseconds: 2500),
     this.duracionAviso = const Duration(milliseconds: 3500),
   }) : _random = random ?? Random() {
+    _mano = mano;
+    _orden = ordenarPorPalo(mano.manos[humano]);
     _programar();
   }
 
@@ -60,15 +63,22 @@ class ControladorPartida extends ChangeNotifier {
 
   final Random _random;
   final Ia _ia;
-  late Partida _partida;
+  late Coto _coto;
   late EstadoMano _mano;
+  List<Carta> _orden = const [];
   ResultadoMano? _resultado;
   String? _aviso;
   Timer? _timer;
   Timer? _timerAviso;
 
-  Partida get partida => _partida;
+  Coto get coto => _coto;
+
+  /// La partida en curso del coto.
+  Partida get partida => _coto.partida;
   EstadoMano get mano => _mano;
+
+  /// Las cartas del humano en el orden en que las tiene colocadas.
+  List<Carta> get manoHumano => _orden;
 
   /// Recuento de la mano recién terminada; `null` mientras se juega.
   ResultadoMano? get resultado => _resultado;
@@ -81,14 +91,43 @@ class ControladorPartida extends ChangeNotifier {
   bool get puedeCambiarSieteHumano => _mano.puedeCambiarSiete(humano);
   bool get turnoHumano => _mano.fase == Fase.jugando && _mano.turno == humano;
 
-  void nuevaPartida() {
-    _partida = Partida.nueva(_random);
+  void nuevoCoto() {
+    _coto = Coto.nuevo(_random);
     _repartir();
   }
 
-  void siguienteMano() {
-    if (_resultado == null || _partida.terminada) return;
+  /// Tras el resumen de una mano: la siguiente mano de vueltas o, si la
+  /// partida ha terminado, la siguiente partida del coto.
+  void continuar() {
+    if (_resultado == null || _coto.terminado) return;
+    if (partida.terminada) _coto = _coto.siguientePartida();
     _repartir();
+  }
+
+  /// Mueve la carta de la posición [desde] a la posición [hasta].
+  void reordenar(int desde, int hasta) {
+    if (desde == hasta) return;
+    final orden = [..._orden];
+    orden.insert(hasta, orden.removeAt(desde));
+    _orden = List.unmodifiable(orden);
+    notifyListeners();
+  }
+
+  /// Coloca las cartas del humano agrupadas por palo, de mayor a menor.
+  void ordenarMano() {
+    _orden = ordenarPorPalo(_orden);
+    notifyListeners();
+  }
+
+  /// Cartas agrupadas por palo y, dentro del palo, de mayor a menor.
+  static List<Carta> ordenarPorPalo(List<Carta> cartas) {
+    final ordenadas = [...cartas]
+      ..sort(
+        (a, b) => a.palo != b.palo
+            ? a.palo.index.compareTo(b.palo.index)
+            : b.valor.fuerza.compareTo(a.valor.fuerza),
+      );
+    return List.unmodifiable(ordenadas);
   }
 
   void jugar(Carta carta) {
@@ -98,14 +137,20 @@ class ControladorPartida extends ChangeNotifier {
 
   void cantar(Palo palo) {
     if (!cantesHumano.contains(palo)) return;
-    _mano = _mano.cantar(humano, palo);
+    _estado = _mano.cantar(humano, palo);
     _avisar(textoCante(humano, _mano.cantes.last));
     notifyListeners();
   }
 
   void cambiarSiete() {
     if (!puedeCambiarSieteHumano) return;
-    _mano = _mano.cambiarSiete(humano);
+    final siete = Carta(Valor.siete, _mano.triunfo);
+    final recogida = _mano.cartaTriunfo!;
+    // La carta recogida ocupa el sitio del 7 en la mano.
+    _orden = List.unmodifiable([
+      for (final c in _orden) c == siete ? recogida : c,
+    ]);
+    _estado = _mano.cambiarSiete(humano);
     _avisar('Cambias el 7 de ${_mano.triunfo.nombre}');
     notifyListeners();
   }
@@ -120,18 +165,33 @@ class ControladorPartida extends ChangeNotifier {
   void _repartir() {
     _timer?.cancel();
     _resultado = null;
-    _mano = _partida.repartir(_random);
-    _avisar(
-      _partida.deVueltas
-          ? 'De vueltas · reparte ${nombres[_mano.repartidor]}'
-          : 'Reparte ${nombres[_mano.repartidor]}',
-    );
+    _mano = _coto.repartir(_random);
+    _orden = ordenarPorPalo(_mano.manos[humano]);
+    final quien = nombres[_mano.repartidor];
+    final numero = _coto.partidasGanadas.reduce((a, b) => a + b) + 1;
+    _avisar(switch (partida) {
+      Partida(deVueltas: true) => 'De vueltas · reparte $quien',
+      _ when numero > 1 => 'Partida $numero del coto · reparte $quien',
+      _ => 'Reparte $quien',
+    });
     notifyListeners();
     _programar();
   }
 
-  void _cambiar(EstadoMano nueva) {
+  /// Cambia la mano y mantiene el orden del humano: las cartas que ya tenía
+  /// siguen donde estaban y las robadas se añaden al final.
+  set _estado(EstadoMano nueva) {
     _mano = nueva;
+    final enMano = nueva.manos[humano];
+    final siguen = _orden.where(enMano.contains);
+    _orden = List.unmodifiable([
+      ...siguen,
+      ...enMano.where((c) => !_orden.contains(c)),
+    ]);
+  }
+
+  void _cambiar(EstadoMano nueva) {
+    _estado = nueva;
     notifyListeners();
     _programar();
   }
@@ -158,7 +218,7 @@ class ControladorPartida extends ChangeNotifier {
   }
 
   void _recoger() {
-    _mano = _mano.recoger();
+    _estado = _mano.recoger();
     // Lo habitual es cantar después de robar.
     _anunciarIa();
     notifyListeners();
@@ -173,7 +233,7 @@ class ControladorPartida extends ChangeNotifier {
 
   void _terminarMano() {
     _resultado = _mano.resultado;
-    _partida = _partida.registrarMano(_resultado!);
+    _coto = _coto.registrarMano(_resultado!);
     notifyListeners();
   }
 

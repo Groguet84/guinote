@@ -33,7 +33,10 @@ EstadoMano trasBaza({
   );
 }
 
-final partidaNueva = Partida(puntos: const [0, 0], repartidor: 0);
+final cotoNuevo = Coto(
+  partidasGanadas: const [0, 0],
+  partida: Partida(puntos: const [0, 0], repartidor: 0),
+);
 
 void main() {
   testWidgets('la IA juega sola hasta que te toca', (tester) async {
@@ -46,22 +49,36 @@ void main() {
     c.dispose();
   });
 
-  testWidgets('se juega una partida entera hasta el final', (tester) async {
+  testWidgets('se juega un coto entero, al mejor de tres partidas', (
+    tester,
+  ) async {
     final c = ControladorPartida(random: Random(9));
     var pasos = 0;
-    while (!c.partida.terminada) {
-      expect(pasos++, lessThan(5000), reason: 'la partida no avanza');
+    var partidas = 0;
+    while (!(c.coto.terminado && c.resultado != null)) {
+      expect(pasos++, lessThan(20000), reason: 'el coto no avanza');
       if (c.resultado != null) {
         final r = c.resultado!;
         expect(r.totalDe(0) + r.totalDe(1), greaterThanOrEqualTo(130));
-        c.siguienteMano();
+        if (c.partida.terminada) {
+          partidas++;
+          expect(
+            c.partida.puntos[c.partida.ganador!],
+            greaterThanOrEqualTo(101),
+          );
+        }
+        c.continuar();
+        if (c.resultado == null) {
+          expect(c.partida.puntos, isNot(contains(greaterThanOrEqualTo(101))));
+        }
       } else if (c.turnoHumano) {
         c.jugar(c.jugablesHumano.first);
       } else {
         await tester.pump(const Duration(milliseconds: 500));
       }
     }
-    expect(c.partida.puntos[c.partida.ganador!], greaterThanOrEqualTo(101));
+    expect(c.coto.partidasGanadas[c.coto.ganador!], 2);
+    expect(partidas, inInclusiveRange(2, 3));
     c.dispose();
   });
 
@@ -69,7 +86,7 @@ void main() {
     tester,
   ) async {
     final c = ControladorPartida.desde(
-      partida: partidaNueva,
+      coto: cotoNuevo,
       mano: trasBaza(
         ganador: 1,
         manos: List.generate(4, (_) => const <Carta>[]),
@@ -98,7 +115,7 @@ void main() {
     );
 
     testWidgets('el compañero espera antes de salir', (tester) async {
-      final c = ControladorPartida.desde(partida: partidaNueva, mano: estado());
+      final c = ControladorPartida.desde(coto: cotoNuevo, mano: estado());
       await tester.pump(c.retardoIa + const Duration(milliseconds: 100));
       expect(c.mano.baza, isEmpty, reason: 'aún no ha salido');
       expect(c.cantesHumano, [Palo.copas]);
@@ -113,7 +130,7 @@ void main() {
     });
 
     testWidgets('la IA no canta por ti', (tester) async {
-      final c = ControladorPartida.desde(partida: partidaNueva, mano: estado());
+      final c = ControladorPartida.desde(coto: cotoNuevo, mano: estado());
       await tester.pump(const Duration(seconds: 4));
       expect(c.mano.baza, isNotEmpty);
       expect(c.mano.cantes, isEmpty);
@@ -123,7 +140,7 @@ void main() {
 
   testWidgets('la IA cambia el 7 antes de robar', (tester) async {
     final c = ControladorPartida.desde(
-      partida: partidaNueva,
+      coto: cotoNuevo,
       mano: trasBaza(
         ganador: 1,
         manos: [
@@ -149,5 +166,93 @@ void main() {
       expect(c.mano, same(antes));
     }
     c.dispose();
+  });
+
+  group('orden de tu mano', () {
+    ControladorPartida enTuTurno() => ControladorPartida.desde(
+      coto: cotoNuevo,
+      mano: EstadoMano(
+        repartidor: 3,
+        triunfo: Palo.oros,
+        cartaTriunfo: asOros,
+        mazo: [
+          const Carta(Valor.dos, Palo.bastos),
+          const Carta(Valor.cuatro, Palo.bastos),
+          const Carta(Valor.cinco, Palo.bastos),
+        ],
+        manos: [
+          [reyCopas, sieteOros, const Carta(Valor.tres, Palo.espadas)],
+          [const Carta(Valor.dos, Palo.copas)],
+          [const Carta(Valor.cuatro, Palo.copas)],
+          [const Carta(Valor.cinco, Palo.copas)],
+        ],
+        turno: 0,
+      ),
+    );
+
+    testWidgets('al repartir, la mano sale agrupada por palos', (tester) async {
+      final c = enTuTurno();
+      expect(c.manoHumano, [
+        sieteOros,
+        reyCopas,
+        const Carta(Valor.tres, Palo.espadas),
+      ]);
+      c.dispose();
+    });
+
+    testWidgets('puedes mover una carta de sitio', (tester) async {
+      final c = enTuTurno();
+      c.reordenar(2, 0);
+      expect(c.manoHumano, [
+        const Carta(Valor.tres, Palo.espadas),
+        sieteOros,
+        reyCopas,
+      ]);
+      c.ordenarMano();
+      expect(c.manoHumano, [
+        sieteOros,
+        reyCopas,
+        const Carta(Valor.tres, Palo.espadas),
+      ]);
+      c.dispose();
+    });
+
+    testWidgets('tu orden se mantiene al jugar y lo robado va al final', (
+      tester,
+    ) async {
+      final c = enTuTurno();
+      c.reordenar(2, 0); // 3 de espadas, 7 de oros, rey de copas
+      c.jugar(sieteOros);
+      expect(c.manoHumano, [const Carta(Valor.tres, Palo.espadas), reyCopas]);
+      // Juegan los demás, se ve la baza 3 s y se roba.
+      await tester.pump(const Duration(seconds: 7));
+      expect(c.manoHumano, hasLength(3));
+      expect(c.manoHumano.take(2), [
+        const Carta(Valor.tres, Palo.espadas),
+        reyCopas,
+      ]);
+      c.dispose();
+    });
+
+    testWidgets('al cambiar el 7, el triunfo ocupa su sitio', (tester) async {
+      final c = ControladorPartida.desde(
+        coto: cotoNuevo,
+        mano: trasBaza(
+          ganador: 0,
+          manos: [
+            [reyCopas, sieteOros, caballoCopas],
+            const [],
+            const [],
+            const [],
+          ],
+        ),
+      );
+      // Repartida: 7 de oros, rey de copas, caballo de copas. El 7 al medio.
+      c.reordenar(0, 1);
+      expect(c.manoHumano, [reyCopas, sieteOros, caballoCopas]);
+      c.cambiarSiete();
+      expect(c.manoHumano, [reyCopas, asOros, caballoCopas]);
+      c.dispose();
+    });
   });
 }

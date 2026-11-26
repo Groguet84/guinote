@@ -64,12 +64,38 @@ void main() {
     expect(find.text('Diez de últimas'), findsOneWidget);
     expect(find.text('Total de la mano'), findsOneWidget);
     final boton = c.partida.terminada
-        ? find.text('Nueva partida')
+        ? find.text('Siguiente partida')
         : find.text('Siguiente mano (de vueltas)');
     await tester.tap(boton);
     await tester.pump();
     expect(c.resultado, isNull);
     expect(find.text('Diez de últimas'), findsNothing);
+    await cerrar(tester, c);
+  });
+
+  testWidgets('arrastrando una carta se cambia de sitio en la mano', (
+    tester,
+  ) async {
+    final c = await montar(tester);
+    final primera = c.manoHumano.first;
+    final ancho = tester.getSize(find.byKey(claveCartaMano(primera))).width;
+    await tester.drag(
+      find.byKey(claveCartaMano(primera)),
+      Offset(ancho * 2.2, 0),
+    );
+    await tester.pump();
+    expect(c.manoHumano.indexOf(primera), 2);
+    expect(
+      c.mano.baza.where((j) => j.carta == primera),
+      isEmpty,
+      reason: 'arrastrar no la echa',
+    );
+    await cerrar(tester, c);
+  });
+
+  testWidgets('el marcador muestra el coto al mejor de tres', (tester) async {
+    final c = await montar(tester);
+    expect(find.text('Coto (al mejor de 3): 0 - 0'), findsOneWidget);
     await cerrar(tester, c);
   });
 }

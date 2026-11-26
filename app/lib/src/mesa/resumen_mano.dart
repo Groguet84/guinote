@@ -3,30 +3,42 @@ import 'package:guinote_core/guinote_core.dart';
 
 import 'marcador.dart';
 
-/// Recuento al acabar una mano y, si la hay, la pareja ganadora.
+/// Recuento al acabar una mano y, si la hay, la pareja que gana la partida
+/// o el coto.
 class ResumenMano extends StatelessWidget {
   const ResumenMano({
     super.key,
     required this.resultado,
-    required this.partida,
-    required this.onSiguienteMano,
-    required this.onNuevaPartida,
+    required this.coto,
+    required this.onContinuar,
+    required this.onNuevoCoto,
   });
 
   final ResultadoMano resultado;
-  final Partida partida;
-  final VoidCallback onSiguienteMano;
-  final VoidCallback onNuevaPartida;
+  final Coto coto;
+
+  /// Siguiente mano de vueltas o siguiente partida del coto.
+  final VoidCallback onContinuar;
+  final VoidCallback onNuevoCoto;
 
   @override
   Widget build(BuildContext context) {
     final tema = Theme.of(context).textTheme;
-    final ganador = partida.ganador;
-    final titulo = switch (ganador) {
-      null => 'Fin de la mano',
-      0 => '¡Habéis ganado la partida!',
-      _ => 'Han ganado los rivales',
+    final partida = coto.partida;
+    final marcadorCoto =
+        '${coto.partidasGanadas[0]} - ${coto.partidasGanadas[1]}';
+    final titulo = switch ((coto.ganador, partida.ganador)) {
+      (0, _) => '¡Habéis ganado el coto! ($marcadorCoto)',
+      (1, _) => 'Los rivales ganan el coto ($marcadorCoto)',
+      (_, 0) => '¡Ganáis la partida! Coto: $marcadorCoto',
+      (_, 1) => 'Los rivales ganan la partida. Coto: $marcadorCoto',
+      _ => 'Fin de la mano',
     };
+    final (textoBoton, accion) = coto.terminado
+        ? ('Nuevo coto', onNuevoCoto)
+        : partida.terminada
+        ? ('Siguiente partida', onContinuar)
+        : ('Siguiente mano (de vueltas)', onContinuar);
 
     TableRow fila(
       String concepto,
@@ -98,16 +110,7 @@ class ResumenMano extends StatelessWidget {
                 style: tema.bodySmall,
               ),
               const SizedBox(height: 20),
-              if (ganador == null)
-                FilledButton(
-                  onPressed: onSiguienteMano,
-                  child: const Text('Siguiente mano (de vueltas)'),
-                )
-              else
-                FilledButton(
-                  onPressed: onNuevaPartida,
-                  child: const Text('Nueva partida'),
-                ),
+              FilledButton(onPressed: accion, child: Text(textoBoton)),
             ],
           ),
         ),

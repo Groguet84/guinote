@@ -79,14 +79,18 @@ class MazoYTriunfo extends StatelessWidget {
   final int cartasMazo;
   final double ancho;
 
+  /// Lo que ocupa el mazo con el triunfo cruzado.
+  Size get tamano {
+    final alto = ancho / proporcionCarta;
+    return Size(alto + ancho * 0.65, alto + ancho * 0.1);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final alto = ancho / proporcionCarta;
     final triunfo = cartaTriunfo;
     if (triunfo == null && cartasMazo == 0) return const SizedBox.shrink();
-    return SizedBox(
-      width: alto + ancho * 0.65,
-      height: alto + ancho * 0.1,
+    return SizedBox.fromSize(
+      size: tamano,
       child: Stack(
         alignment: Alignment.centerLeft,
         children: [

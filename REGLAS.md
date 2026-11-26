@@ -63,3 +63,7 @@ Ejemplo: tu compañero sale con el 3 de copas y el rival echa el 2 de copas. Aun
 - Gana la pareja que llega a 51 buenas, es decir, a 101 puntos en total. Se comprueba al acabar cada mano.
 - Si ninguna pareja llega a 101, se juega otra mano "de vueltas", sumando los puntos a los que ya tenía cada pareja. Gana la primera que llegue a 101.
 - Si las dos parejas llegan a 101 en la misma mano, gana la que ha hecho la última baza.
+
+## Coto
+- Se juega un coto al mejor de tres partidas: lo gana la primera pareja que gana 2 partidas.
+- Cada partida empieza a cero (malas y buenas). El reparto sigue rotando de una partida a la siguiente.
