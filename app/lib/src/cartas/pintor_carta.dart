@@ -125,7 +125,8 @@ class PintorCarta extends CustomPainter {
     ],
   };
 
-  /// Figuras: retrato estilizado con el nombre y el símbolo del palo.
+  /// Figuras: retrato estilizado con el símbolo del palo. Sin nombre: se
+  /// reconocen por el número y el dibujo, como en la baraja de verdad.
   void _figura(Canvas canvas, Rect zona) {
     final color = colorPalo(carta.palo);
     final marco = RRect.fromRectAndRadius(
@@ -143,7 +144,7 @@ class PintorCarta extends CustomPainter {
 
     final cx = zona.center.dx;
     final u = zona.width;
-    final cabeza = Offset(cx, zona.top + zona.height * 0.25);
+    final cabeza = Offset(cx, zona.top + zona.height * 0.3);
     final relleno = Paint()..color = color;
     final piel = Paint()..color = const Color(0xFFF2D3B0);
     final contorno = Paint()
@@ -155,8 +156,8 @@ class PintorCarta extends CustomPainter {
     final cuerpo = Path()
       ..moveTo(cx - u * 0.14, cabeza.dy + u * 0.14)
       ..lineTo(cx + u * 0.14, cabeza.dy + u * 0.14)
-      ..lineTo(cx + u * 0.32, zona.top + zona.height * 0.62)
-      ..lineTo(cx - u * 0.32, zona.top + zona.height * 0.62)
+      ..lineTo(cx + u * 0.32, zona.top + zona.height * 0.72)
+      ..lineTo(cx - u * 0.32, zona.top + zona.height * 0.72)
       ..close();
     canvas.drawPath(cuerpo, relleno);
     canvas.drawPath(cuerpo, contorno);
@@ -208,28 +209,9 @@ class PintorCarta extends CustomPainter {
     pintarSimbolo(
       canvas,
       carta.palo,
-      Offset(cx, zona.top + zona.height * 0.62),
+      Offset(cx, zona.top + zona.height * 0.72),
       u * 0.42,
     );
-
-    final nombre = TextPainter(
-      text: TextSpan(
-        text: carta.valor.nombre.toUpperCase(),
-        style: TextStyle(
-          color: _tinta,
-          fontFamily: 'Roboto',
-          fontSize: u * 0.15,
-          fontWeight: FontWeight.w700,
-          letterSpacing: u * 0.01,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout(maxWidth: zona.width);
-    nombre.paint(
-      canvas,
-      Offset(cx - nombre.width / 2, zona.bottom - nombre.height - u * 0.04),
-    );
-    nombre.dispose();
   }
 
   @override
