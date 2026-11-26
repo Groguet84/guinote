@@ -7,7 +7,7 @@ import 'vista_jugador.dart';
 ///
 /// Sencilla pero razonable: carga puntos cuando la baza es de su pareja, mata
 /// con la carta más barata que gane, no gasta triunfos en bazas pobres,
-/// guarda las parejas de rey y caballo para cantar y, en el arrastre, lleva
+/// guarda las parejas de rey y sota para cantar y, en el arrastre, lleva
 /// la cuenta de las cartas que han salido. Solo usa la [VistaJugador], así
 /// que no ve las cartas de los demás.
 final class Ia {
@@ -105,11 +105,11 @@ final class Ia {
       c.puntos * 3 +
       c.valor.fuerza;
 
-  /// Rey o caballo de un palo sin cantar cuando se tienen los dos.
+  /// Rey o sota de un palo sin cantar cuando se tienen los dos.
   bool _guardaParaCantar(Carta c, VistaJugador v) {
-    if (c.valor != Valor.rey && c.valor != Valor.caballo) return false;
+    if (c.valor != Valor.rey && c.valor != Valor.sota) return false;
     if (v.palosCantados.contains(c.palo)) return false;
-    final pareja = c.valor == Valor.rey ? Valor.caballo : Valor.rey;
+    final pareja = c.valor == Valor.rey ? Valor.sota : Valor.rey;
     return v.mano.contains(Carta(pareja, c.palo));
   }
 

@@ -31,7 +31,7 @@ enum Fase {
   terminada,
 }
 
-/// Un cante de rey y caballo del mismo palo.
+/// Un cante de rey y sota del mismo palo.
 final class Cante {
   const Cante({
     required this.jugador,
@@ -213,7 +213,7 @@ final class EstadoMano {
       for (final palo in Palo.values)
         if (!cantados.contains(palo) &&
             mano.contains(Carta(Valor.rey, palo)) &&
-            mano.contains(Carta(Valor.caballo, palo)))
+            mano.contains(Carta(Valor.sota, palo)))
           palo,
     ];
   }

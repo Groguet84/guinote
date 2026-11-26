@@ -138,20 +138,20 @@ void main() {
   });
 
   group('Cantar', () {
-    const manos = ['12c 11c 2b', '12e 11e', '12o 11o 12b 11b', '3e'];
+    const manos = ['12c 10c 2b', '12e 10e', '12o 10o 12b 10b', '3e'];
 
-    test('rey y caballo: 20 en un palo cualquiera', () {
+    test('rey y sota: 20 en un palo cualquiera', () {
       final e = trasBaza(ganador: 0, manos: manos).cantar(0, Palo.copas);
       expect(e.cantes.single.puntos, 20);
     });
 
-    test('rey y caballo de triunfo: 40', () {
+    test('rey y sota de triunfo: 40', () {
       final e = trasBaza(ganador: 0, manos: manos).cantar(2, Palo.oros);
       expect(e.cantes.single.puntos, 40);
     });
 
-    test('rey y sota no es cante', () {
-      final e = trasBaza(ganador: 0, manos: ['12c 10c', '', '', '']);
+    test('rey y caballo no es cante: se canta siempre con la sota', () {
+      final e = trasBaza(ganador: 0, manos: ['12c 11c', '', '', '']);
       expect(e.cantesPosibles(0), isEmpty);
     });
 
@@ -179,7 +179,7 @@ void main() {
         ganador: 0,
         manos: ['12c 2b', '4b', '5b', '6b'],
         fase: Fase.bazaCompleta,
-        mazo: '11c 7b 7e',
+        mazo: '10c 7b 7e',
       );
       expect(e.cantesPosibles(0), isEmpty);
       expect(e.recoger().cantesPosibles(0), [Palo.copas]);

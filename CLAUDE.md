@@ -6,7 +6,7 @@ Juego de guiñote (variante aragonesa y valenciana) en Flutter para web y Androi
 - **`REGLAS.md` es la especificación y manda sobre cualquier otra variante del guiñote.** No inventes reglas: si algo no está claro, pregunta.
 - Puntos frecuentes de error:
   - la sota (3 puntos) es más alta que el caballo (2);
-  - se canta **rey + caballo**;
+  - se canta **rey + sota**, nunca con el caballo;
   - en el arrastre solo hay obligación de matar o de fallar con triunfo si la baza la va ganando un rival.
 
 ## Estructura

@@ -5,7 +5,7 @@ import 'package:guinote/src/juego/controlador_partida.dart';
 import 'package:guinote_core/guinote_core.dart';
 
 const reyCopas = Carta(Valor.rey, Palo.copas);
-const caballoCopas = Carta(Valor.caballo, Palo.copas);
+const sotaCopas = Carta(Valor.sota, Palo.copas);
 const sieteOros = Carta(Valor.siete, Palo.oros);
 const asOros = Carta(Valor.as, Palo.oros);
 
@@ -107,7 +107,7 @@ void main() {
     EstadoMano estado() => trasBaza(
       ganador: 2,
       manos: [
-        [reyCopas, caballoCopas],
+        [reyCopas, sotaCopas],
         [const Carta(Valor.dos, Palo.copas)],
         [const Carta(Valor.cuatro, Palo.copas)],
         [const Carta(Valor.cinco, Palo.copas)],
@@ -240,18 +240,18 @@ void main() {
         mano: trasBaza(
           ganador: 0,
           manos: [
-            [reyCopas, sieteOros, caballoCopas],
+            [reyCopas, sieteOros, sotaCopas],
             const [],
             const [],
             const [],
           ],
         ),
       );
-      // Repartida: 7 de oros, rey de copas, caballo de copas. El 7 al medio.
+      // Repartida: 7 de oros, rey de copas, sota de copas. El 7 al medio.
       c.reordenar(0, 1);
-      expect(c.manoHumano, [reyCopas, sieteOros, caballoCopas]);
+      expect(c.manoHumano, [reyCopas, sieteOros, sotaCopas]);
       c.cambiarSiete();
-      expect(c.manoHumano, [reyCopas, asOros, caballoCopas]);
+      expect(c.manoHumano, [reyCopas, asOros, sotaCopas]);
       c.dispose();
     });
   });

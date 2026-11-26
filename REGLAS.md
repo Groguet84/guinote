@@ -46,7 +46,7 @@ Cuando se acaba el mazo empieza el arrastre, con estas obligaciones:
 Ejemplo: tu compañero sale con el 3 de copas y el rival echa el 2 de copas. Aunque tengas el as de copas, puedes echar el 5 de copas.
 
 ## Cantar
-- Rey + caballo del mismo palo: **20** puntos; si son de triunfo, **40** puntos.
+- Rey + sota del mismo palo: **20** puntos; si son de triunfo, **40** puntos. Se canta siempre con la sota, nunca con el caballo.
 - Solo se puede cantar si la última baza la ha ganado tu pareja. Puede cantar cualquiera de los dos.
 - Se puede cantar antes o después de robar, hasta que se eche la primera carta de la baza siguiente. Lo habitual es cantar después de robar.
 - En una misma baza se pueden cantar todos los cantes que tenga la pareja (por ejemplo, tres veintes y las cuarenta).

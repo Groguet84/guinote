@@ -13,7 +13,7 @@ El guiñote es el juego de cartas tradicional de Aragón y Valencia. Esta versi�
 ## Qué incluye
 
 - **Las reglas completas del guiñote aragonés**, especificadas en [REGLAS.md](REGLAS.md): reparto, robos, obligaciones del arrastre, cantes de 20 y 40, cambio del 7 de triunfo, diez de últimas, malas y buenas, manos de vueltas y cotos al mejor de tres partidas.
-- **Una IA para los otros tres jugadores.** Carga puntos a su compañero, mata con la carta más barata, guarda los triunfos y las parejas de rey y caballo, y en el arrastre cuenta las cartas. Gana más del 75 % de las partidas a jugadores aleatorios.
+- **Una IA para los otros tres jugadores.** Carga puntos a su compañero, mata con la carta más barata, guarda los triunfos y las parejas de rey y sota, y en el arrastre cuenta las cartas. Gana más del 75 % de las partidas a jugadores aleatorios.
 - **Una interfaz adaptable** a escritorio y móvil:
   - en tu turno solo se pueden echar las cartas legales;
   - puedes colocar tus cartas a tu gusto arrastrándolas, u ordenarlas por palos con un botón;

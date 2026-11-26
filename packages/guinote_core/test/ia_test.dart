@@ -107,9 +107,9 @@ void main() {
       expect(elige(e), c('2o'));
     });
 
-    test('no se deshace del rey ni del caballo si puede cantarlos', () {
-      final e = mesa(jugador: 2, mano: '12e 11e 10b', salida: 1, enMesa: '4c');
-      expect(elige(e), c('10b'));
+    test('no se deshace del rey ni de la sota si puede cantarlos', () {
+      final e = mesa(jugador: 2, mano: '12e 10e 11b', salida: 1, enMesa: '4c');
+      expect(elige(e), c('11b'));
     });
   });
 
@@ -157,7 +157,7 @@ void main() {
     });
 
     test('cambia el 7 antes de cantar: la carta recogida puede dar las 40', () {
-      final e = ia.anunciar(tras('7o 11o 12c 11c', destapada: '12o'), 0);
+      final e = ia.anunciar(tras('7o 10o 12c 10c', destapada: '12o'), 0);
       expect(e.cartaTriunfo, c('7o'));
       expect(e.cantes.map((c) => c.puntos), [40, 20]);
     });
