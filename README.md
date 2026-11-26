@@ -12,7 +12,7 @@ El guiñote es el juego de cartas tradicional de Aragón y Valencia. Esta versi�
 
 ## Qué incluye
 
-- **Las reglas completas del guiñote aragonés**, especificadas en [REGLAS.md](REGLAS.md): reparto, robos, obligaciones del arrastre, cantes de 20 y 40, cambio del 7 de triunfo, diez de últimas, malas y buenas, manos de vueltas y cotos al mejor de tres partidas.
+- **Las reglas completas del guiñote aragonés**, especificadas en [REGLAS.md](REGLAS.md): reparto, robos, obligaciones del arrastre, cantes de 20 y 40, cambio del 7 de triunfo, diez de últimas, malas y buenas, manos de vueltas (con los puntos en directo y fin inmediato al llegar a 51 buenas) y cotos al mejor de tres partidas.
 - **Una IA para los otros tres jugadores.** Carga puntos a su compañero, mata con la carta más barata, guarda los triunfos y las parejas de rey y sota, y en el arrastre cuenta las cartas. Gana más del 75 % de las partidas a jugadores aleatorios.
 - **Una interfaz adaptable** a escritorio y móvil:
   - en tu turno solo se pueden echar las cartas legales;
@@ -50,8 +50,8 @@ app/                     Flutter: pantalla, animaciones y controlador de partida
 ## Tests
 
 ```bash
-cd packages/guinote_core && dart test     # 89 tests del motor y la IA
-cd app && flutter test                    # 17 tests del controlador y la mesa
+cd packages/guinote_core && dart test     # 97 tests del motor y la IA
+cd app && flutter test                    # 20 tests del controlador y la mesa
 ```
 
 - **Reglas:** hay un test por cada regla. Cubren el orden y los puntos de las cartas, el ganador de la baza, cada obligación del arrastre (incluido el caso de no tener que matar a tu compañero), los cantes, el cambio del 7, los robos, la puntuación con vueltas y el coto.

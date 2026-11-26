@@ -3,7 +3,7 @@ import 'dart:math';
 import 'estado_mano.dart';
 import 'reglas.dart';
 
-/// Marcador de una partida a 101 puntos (50 malas + 51 buenas).
+/// Marcador de una partida a [puntosParaGanar] puntos (50 malas + 51 buenas).
 ///
 /// Inmutable: [registrarMano] devuelve la partida actualizada.
 final class Partida {
@@ -20,9 +20,6 @@ final class Partida {
 
   /// Puntos que son «malas».
   static const int malas = 50;
-
-  /// Puntos totales para ganar: 50 malas + 51 buenas.
-  static const int puntosParaGanar = 101;
 
   /// Puntos acumulados de cada pareja.
   final List<int> puntos;
@@ -48,11 +45,16 @@ final class Partida {
   /// Reparte la siguiente mano.
   EstadoMano repartir(Random random) {
     if (terminada) throw const AccionInvalida('La partida ha terminado.');
-    return EstadoMano.repartir(repartidor: repartidor, random: random);
+    return EstadoMano.repartir(
+      repartidor: repartidor,
+      random: random,
+      puntosPartida: deVueltas ? puntos : null,
+    );
   }
 
   /// Suma el [resultado] de una mano y decide si hay ganador. Si las dos
-  /// parejas llegan a 101 en la misma mano, gana la de la última baza.
+  /// parejas llegan a 101 en la misma mano, gana la de la última baza. (De
+  /// vueltas no puede pasar: la mano se corta en cuanto llega una.)
   Partida registrarMano(ResultadoMano resultado) {
     if (terminada) throw const AccionInvalida('La partida ha terminado.');
     final nuevos = [
@@ -69,7 +71,7 @@ final class Partida {
       ganador: switch (llegan) {
         [] => null,
         [final unica] => unica,
-        _ => resultado.parejaUltimaBaza,
+        _ => resultado.parejaUltimaBaza ?? (nuevos[0] >= nuevos[1] ? 0 : 1),
       },
     );
   }

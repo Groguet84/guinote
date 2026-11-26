@@ -10,9 +10,11 @@ EstadoMano jugarManoAleatoria(EstadoMano e, Random random) {
     for (var j = 0; j < numJugadores; j++) {
       if (e.puedeCambiarSiete(j) && random.nextBool()) e = e.cambiarSiete(j);
       for (final palo in e.cantesPosibles(j)) {
+        if (e.fase == Fase.terminada) break;
         e = e.cantar(j, palo);
       }
     }
+    if (e.fase == Fase.terminada) break;
     if (e.fase == Fase.bazaCompleta) {
       e = e.recoger();
       continue;

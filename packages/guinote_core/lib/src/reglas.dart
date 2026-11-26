@@ -3,6 +3,9 @@ import 'carta.dart';
 /// Número de jugadores de la mesa.
 const int numJugadores = 4;
 
+/// Puntos para ganar una partida: 50 malas + 51 buenas.
+const int puntosParaGanar = 101;
+
 /// Los jugadores se numeran 0-3 en sentido antihorario. Los compañeros
 /// se sientan enfrente: la pareja 0 la forman 0 y 2, y la pareja 1, 1 y 3.
 int parejaDe(int jugador) => jugador % 2;

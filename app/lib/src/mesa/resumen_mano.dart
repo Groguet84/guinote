@@ -109,6 +109,15 @@ class ResumenMano extends StatelessWidget {
                 ].join(' · '),
                 style: tema.bodySmall,
               ),
+              if (resultado.cortada) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Se ha llegado a 51 buenas antes de acabar la mano: '
+                  'no se juegan las cartas que quedan ni hay diez de últimas.',
+                  style: tema.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ],
               const SizedBox(height: 20),
               FilledButton(onPressed: accion, child: Text(textoBoton)),
             ],

@@ -15,11 +15,15 @@ class Marcador extends StatelessWidget {
   const Marcador({
     super.key,
     required this.coto,
+    required this.puntos,
     required this.triunfo,
     required this.onNuevoCoto,
   });
 
   final Coto coto;
+
+  /// Puntos de cada pareja (de vueltas, en directo).
+  final List<int> puntos;
   final Palo triunfo;
   final VoidCallback onNuevoCoto;
 
@@ -56,11 +60,11 @@ class Marcador extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: '${nombresParejas[p]}  ${partida.puntos[p]}',
+                          text: '${nombresParejas[p]}  ${puntos[p]}',
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         TextSpan(
-                          text: '  ${textoMalasBuenas(partida.puntos[p])}',
+                          text: '  ${textoMalasBuenas(puntos[p])}',
                           style: const TextStyle(color: Colors.white70),
                         ),
                       ],

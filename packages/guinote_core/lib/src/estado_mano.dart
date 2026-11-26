@@ -82,7 +82,13 @@ final class ResultadoMano {
 
   final List<int> puntosBazas;
   final List<int> puntosCantes;
-  final int parejaUltimaBaza;
+
+  /// Pareja que hizo la última baza; `null` si la mano se cortó antes porque
+  /// una pareja llegó a 101 de vueltas (entonces no hay diez de últimas).
+  final int? parejaUltimaBaza;
+
+  /// La mano se cortó porque una pareja llegó a 101 de vueltas.
+  bool get cortada => parejaUltimaBaza == null;
 
   /// Bazas + cantes + 10 de últimas.
   int totalDe(int pareja) =>
@@ -106,7 +112,11 @@ final class EstadoMano {
     List<Baza> bazas = const [],
     List<Cante> cantes = const [],
     this.fase = Fase.jugando,
-  }) : mazo = List.unmodifiable(mazo),
+    List<int>? puntosPartida,
+  }) : puntosPartida = puntosPartida == null
+           ? null
+           : List.unmodifiable(puntosPartida),
+       mazo = List.unmodifiable(mazo),
        manos = List.unmodifiable([
          for (final m in manos) List<Carta>.unmodifiable(m),
        ]),
@@ -120,9 +130,13 @@ final class EstadoMano {
 
   /// Baraja con [random] y reparte: 6 cartas a cada jugador empezando por
   /// la derecha del repartidor, la siguiente es el triunfo y el resto el mazo.
+  ///
+  /// En una mano de vueltas, [puntosPartida] son los puntos que ya lleva cada
+  /// pareja: la mano se corta en cuanto una llega a [puntosParaGanar].
   factory EstadoMano.repartir({
     required int repartidor,
     required Random random,
+    List<int>? puntosPartida,
   }) {
     final cartas = [...Carta.baraja]..shuffle(random);
     final manos = List.generate(numJugadores, (_) => <Carta>[]);
@@ -142,10 +156,52 @@ final class EstadoMano {
       mazo: cartas.sublist(siguiente),
       manos: manos,
       turno: siguienteJugador(repartidor),
+      puntosPartida: puntosPartida,
     );
   }
 
   final int repartidor;
+
+  /// De vueltas, los puntos que cada pareja llevaba al empezar la mano;
+  /// `null` en la primera mano de la partida (la ida).
+  final List<int>? puntosPartida;
+
+  bool get esDeVueltas => puntosPartida != null;
+
+  /// Puntos de bazas y cantes que lleva cada pareja en esta mano, sin las
+  /// diez de últimas.
+  List<int> get puntosEnJuego {
+    final puntos = [0, 0];
+    for (final b in bazas) {
+      puntos[parejaDe(b.ganador)] += b.puntos;
+    }
+    for (final c in cantes) {
+      puntos[parejaDe(c.jugador)] += c.puntos;
+    }
+    return puntos;
+  }
+
+  /// De vueltas, la pareja que ya ha llegado a [puntosParaGanar] sumando
+  /// lo que llevaba y lo de esta mano; `null` si ninguna (o si es la ida).
+  int? get parejaQueLlega {
+    final previos = puntosPartida;
+    if (previos == null) return null;
+    final enJuego = puntosEnJuego;
+    for (var p = 0; p < 2; p++) {
+      if (previos[p] + enJuego[p] >= puntosParaGanar) return p;
+    }
+    return null;
+  }
+
+  /// Se han jugado todas las cartas.
+  bool get _todasJugadas =>
+      cartasPorRobar == 0 && manos.every((m) => m.isEmpty);
+
+  /// De vueltas, si una pareja ha llegado a 101 la mano se acaba ya.
+  EstadoMano _cortarSiLlega() =>
+      parejaQueLlega != null && fase != Fase.terminada
+      ? _copia(fase: Fase.terminada)
+      : this;
 
   /// Palo de triunfo de la mano.
   final Palo triunfo;
@@ -258,7 +314,7 @@ final class EstadoMano {
       ],
       turno: ganador,
       fase: ultima ? Fase.terminada : Fase.bazaCompleta,
-    );
+    )._cortarSiLlega();
   }
 
   /// Recoge la baza completa y, si queda mazo, roba cada jugador una carta
@@ -310,7 +366,7 @@ final class EstadoMano {
       palo: palo,
       puntos: Cante.puntosDe(palo, triunfo),
     );
-    return _copia(cantes: [...cantes, cante]);
+    return _copia(cantes: [...cantes, cante])._cortarSiLlega();
   }
 
   /// [jugador] cambia el 7 de triunfo por la carta de triunfo destapada.
@@ -342,7 +398,7 @@ final class EstadoMano {
     return ResultadoMano(
       puntosBazas: puntosBazas,
       puntosCantes: puntosCantes,
-      parejaUltimaBaza: parejaDe(bazas.last.ganador),
+      parejaUltimaBaza: _todasJugadas ? parejaDe(bazas.last.ganador) : null,
     );
   }
 
@@ -364,6 +420,7 @@ final class EstadoMano {
     List<Cante>? cantes,
     Fase? fase,
   }) => EstadoMano(
+    puntosPartida: puntosPartida,
     repartidor: repartidor,
     triunfo: triunfo,
     cartaTriunfo: cartaTriunfo != null ? cartaTriunfo() : this.cartaTriunfo,

@@ -77,6 +77,15 @@ class ControladorPartida extends ChangeNotifier {
   Partida get partida => _coto.partida;
   EstadoMano get mano => _mano;
 
+  /// Puntos que muestra el marcador. De vueltas se cuentan en directo: lo
+  /// que llevaba cada pareja más lo ganado en esta mano. En la ida no se
+  /// muestra lo de la mano hasta que se acaba.
+  List<int> get puntosMarcador {
+    if (_resultado != null || !_mano.esDeVueltas) return partida.puntos;
+    final enJuego = _mano.puntosEnJuego;
+    return [for (var p = 0; p < 2; p++) partida.puntos[p] + enJuego[p]];
+  }
+
   /// Las cartas del humano en el orden en que las tiene colocadas.
   List<Carta> get manoHumano => _orden;
 
@@ -140,6 +149,8 @@ class ControladorPartida extends ChangeNotifier {
     _estado = _mano.cantar(humano, palo);
     _avisar(textoCante(humano, _mano.cantes.last));
     notifyListeners();
+    // De vueltas, el cante puede dar los 101 y acabar la partida.
+    if (_mano.fase == Fase.terminada) _programar();
   }
 
   void cambiarSiete() {
@@ -201,7 +212,16 @@ class ControladorPartida extends ChangeNotifier {
     _timer?.cancel();
     switch (_mano.fase) {
       case Fase.terminada:
-        _avisarGanadorBaza();
+        switch (_mano.parejaQueLlega) {
+          case null:
+            _avisarGanadorBaza();
+          case final pareja:
+            _avisar(
+              pareja == parejaDe(humano)
+                  ? '¡Llegáis a 51 buenas! Se acaba la partida'
+                  : 'Los rivales llegan a 51 buenas. Se acaba la partida',
+            );
+        }
         _timer = Timer(retardoRecoger, _terminarMano);
       case Fase.bazaCompleta:
         _avisarGanadorBaza();

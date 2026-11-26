@@ -32,6 +32,8 @@ final class Ia {
       e = e.cambiarSiete(jugador);
     }
     for (final palo in cantes(VistaJugador.de(e, jugador))) {
+      // De vueltas, un cante puede dar los 101 y acabar la mano.
+      if (e.fase == Fase.terminada) break;
       e = e.cantar(jugador, palo);
     }
     return e;

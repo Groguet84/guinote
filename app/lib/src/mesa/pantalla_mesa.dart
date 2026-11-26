@@ -112,6 +112,7 @@ class _PantallaMesaState extends State<PantallaMesa> {
                     fit: BoxFit.scaleDown,
                     child: Marcador(
                       coto: _c.coto,
+                      puntos: _c.puntosMarcador,
                       triunfo: mano.triunfo,
                       onNuevoCoto: _c.nuevoCoto,
                     ),

@@ -48,6 +48,7 @@ EstadoMano jugarMano(
     for (var j = 0; j < 4; j++) {
       if (usaIa(j)) e = ia.anunciar(e, j);
     }
+    if (e.fase == Fase.terminada) break;
     if (e.fase == Fase.bazaCompleta) {
       e = e.recoger();
       continue;

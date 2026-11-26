@@ -59,7 +59,9 @@ void main() {
       expect(pasos++, lessThan(20000), reason: 'el coto no avanza');
       if (c.resultado != null) {
         final r = c.resultado!;
-        expect(r.totalDe(0) + r.totalDe(1), greaterThanOrEqualTo(130));
+        if (!r.cortada) {
+          expect(r.totalDe(0) + r.totalDe(1), greaterThanOrEqualTo(130));
+        }
         if (c.partida.terminada) {
           partidas++;
           expect(
@@ -78,7 +80,8 @@ void main() {
       }
     }
     expect(c.coto.partidasGanadas[c.coto.ganador!], 2);
-    expect(partidas, inInclusiveRange(2, 3));
+    expect(partidas + 1, c.coto.partidasGanadas.reduce((a, b) => a + b));
+    expect(partidas + 1, inInclusiveRange(2, 3));
     c.dispose();
   });
 
@@ -252,6 +255,125 @@ void main() {
       expect(c.manoHumano, [reyCopas, sieteOros, sotaCopas]);
       c.cambiarSiete();
       expect(c.manoHumano, [reyCopas, asOros, sotaCopas]);
+      c.dispose();
+    });
+  });
+
+  group('de vueltas', () {
+    Coto cotoDeVueltas(List<int> puntos) => Coto(
+      partidasGanadas: const [0, 0],
+      partida: Partida(puntos: puntos, repartidor: 3, manosJugadas: 1),
+    );
+
+    EstadoMano manoDeVueltas(List<int> puntos, List<List<Carta>> manos) =>
+        EstadoMano(
+          repartidor: 3,
+          triunfo: Palo.oros,
+          cartaTriunfo: const Carta(Valor.seis, Palo.oros),
+          mazo: const [
+            Carta(Valor.dos, Palo.bastos),
+            Carta(Valor.cuatro, Palo.bastos),
+            Carta(Valor.cinco, Palo.bastos),
+          ],
+          manos: manos,
+          turno: 0,
+          bazas: [
+            Baza(
+              jugadas: [
+                for (var j = 0; j < 4; j++)
+                  (jugador: j, carta: Carta(Valor.values[j], Palo.espadas)),
+              ],
+              ganador: 0,
+            ),
+          ],
+          puntosPartida: puntos,
+        );
+
+    testWidgets('el marcador suma los puntos en directo', (tester) async {
+      final c = ControladorPartida.desde(
+        coto: cotoDeVueltas([60, 30]),
+        mano: manoDeVueltas(
+          [60, 30],
+          [
+            [
+              const Carta(Valor.as, Palo.copas),
+              const Carta(Valor.dos, Palo.bastos),
+            ],
+            [
+              const Carta(Valor.tres, Palo.copas),
+              const Carta(Valor.cuatro, Palo.bastos),
+            ],
+            [
+              const Carta(Valor.dos, Palo.copas),
+              const Carta(Valor.cinco, Palo.bastos),
+            ],
+            [
+              const Carta(Valor.cuatro, Palo.copas),
+              const Carta(Valor.seis, Palo.bastos),
+            ],
+          ],
+        ),
+      );
+      expect(c.puntosMarcador, [60, 30]);
+      c.jugar(const Carta(Valor.as, Palo.copas));
+      await tester.pump(const Duration(seconds: 3));
+      final baza = c.mano.bazas.last;
+      expect(baza.ganador, 0, reason: 'el as de copas gana');
+      expect(baza.puntos, greaterThanOrEqualTo(11));
+      expect(c.puntosMarcador, [
+        60 + baza.puntos,
+        30,
+      ], reason: 'los puntos de la baza se suman al momento');
+      c.dispose();
+    });
+
+    testWidgets('si tu cante da los 101, se acaba la partida', (tester) async {
+      final c = ControladorPartida.desde(
+        coto: cotoDeVueltas([70, 20]),
+        mano: manoDeVueltas(
+          [70, 20],
+          [
+            [
+              const Carta(Valor.rey, Palo.oros),
+              const Carta(Valor.sota, Palo.oros),
+            ],
+            [
+              const Carta(Valor.dos, Palo.copas),
+              const Carta(Valor.dos, Palo.espadas),
+            ],
+            [
+              const Carta(Valor.cuatro, Palo.copas),
+              const Carta(Valor.cuatro, Palo.espadas),
+            ],
+            [
+              const Carta(Valor.cinco, Palo.copas),
+              const Carta(Valor.cinco, Palo.espadas),
+            ],
+          ],
+        ),
+      );
+      c.cantar(Palo.oros);
+      expect(c.puntosMarcador, [110, 20]);
+      expect(c.mano.fase, Fase.terminada);
+      expect(c.aviso, '¡Llegáis a 51 buenas! Se acaba la partida');
+      await tester.pump(c.retardoRecoger);
+      expect(c.resultado!.cortada, isTrue);
+      expect(c.partida.ganador, 0);
+      expect(c.coto.partidasGanadas, [1, 0]);
+      c.dispose();
+    });
+
+    testWidgets('en la ida el marcador no cambia hasta acabar la mano', (
+      tester,
+    ) async {
+      final c = ControladorPartida(random: Random(4));
+      for (var i = 0; i < 40 && c.mano.bazas.isEmpty; i++) {
+        if (c.turnoHumano) c.jugar(c.jugablesHumano.first);
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      expect(c.mano.bazas, isNotEmpty);
+      expect(c.mano.esDeVueltas, isFalse);
+      expect(c.puntosMarcador, [0, 0]);
       c.dispose();
     });
   });

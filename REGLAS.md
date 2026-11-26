@@ -60,9 +60,13 @@ Ejemplo: tu compañero sale con el 3 de copas y el rival echa el 2 de copas. Aun
 ## Puntuación y final de partida
 - Al acabar la mano, cada pareja suma: puntos de sus bazas + cantes + 10 de la última baza.
 - Los primeros 50 puntos son las "malas"; a partir de ahí se cuentan las "buenas".
-- Gana la pareja que llega a 51 buenas, es decir, a 101 puntos en total. Se comprueba al acabar cada mano.
-- Si ninguna pareja llega a 101, se juega otra mano "de vueltas", sumando los puntos a los que ya tenía cada pareja. Gana la primera que llegue a 101.
-- Si las dos parejas llegan a 101 en la misma mano, gana la que ha hecho la última baza.
+- Gana la pareja que llega a 51 buenas, es decir, a 101 puntos en total.
+- La primera mano de cada partida (la "ida") se juega entera y se cuenta al acabar. Durante la ida no se muestran los puntos.
+- Si ninguna pareja llega a 101, se juega otra mano "de vueltas", sumando los puntos a los que ya tenía cada pareja.
+- De vueltas, los puntos se cuentan en directo: cada baza ganada y cada cante suman al momento a lo que ya tenía la pareja.
+- En cuanto una pareja llega a 101 de vueltas, la partida se acaba en ese momento, sin que nadie tenga que decir nada: no se juegan las cartas que quedan ni se cuentan las diez de últimas.
+- Si nadie llega antes, la mano de vueltas se juega entera y las diez de últimas cuentan como siempre.
+- Si las dos parejas llegan a 101 al acabar la ida, gana la que ha hecho la última baza.
 
 ## Coto
 - Se juega un coto al mejor de tres partidas: lo gana la primera pareja que gana 2 partidas.
