@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:guinote_core/guinote_core.dart';
 
-/// Proporción ancho / alto de una carta.
-const double proporcionCarta = 0.66;
+/// Proporción ancho / alto de una carta (la de las imágenes de la baraja).
+const double proporcionCarta = 208 / 319;
 
 /// Colores de cada palo.
 Color colorPalo(Palo palo) => switch (palo) {
@@ -18,6 +18,8 @@ const _papel = Color(0xFFFFFBF0);
 const _tinta = Color(0xFF3A2A1A);
 
 /// Dibuja la cara de una carta de la baraja española, toda por código.
+///
+/// Es el respaldo de las imágenes de `assets/cartas/` si alguna no carga.
 class PintorCarta extends CustomPainter {
   const PintorCarta(this.carta);
 

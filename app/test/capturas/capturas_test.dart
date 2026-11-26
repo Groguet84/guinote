@@ -12,6 +12,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:guinote/main.dart';
+import 'package:guinote/src/cartas/carta_widget.dart';
 import 'package:guinote/src/juego/controlador_partida.dart';
 import 'package:guinote/src/mesa/pantalla_mesa.dart';
 import 'package:guinote_core/guinote_core.dart';
@@ -62,6 +63,10 @@ Future<ControladorPartida> jugarHasta(
       key: const ValueKey('captura'),
       child: GuinoteApp(mesa: PantallaMesa(controlador: c)),
     ),
+  );
+  // Las imágenes de las cartas se cargan fuera del reloj simulado.
+  await tester.runAsync(
+    () => precargarCartas(tester.element(find.byType(PantallaMesa))),
   );
   for (var i = 0; i < 4000 && !hasta(c); i++) {
     if (c.turnoHumano) {

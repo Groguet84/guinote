@@ -98,4 +98,15 @@ void main() {
     expect(find.text('Coto (al mejor de 3): 0 - 0'), findsOneWidget);
     await cerrar(tester, c);
   });
+
+  testWidgets('el menú muestra los créditos de las cartas', (tester) async {
+    final c = await montar(tester);
+    await tester.tap(find.byTooltip('Menú'));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Créditos'));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    expect(find.textContaining('Basquetteur'), findsOneWidget);
+    expect(find.textContaining('CC BY-SA 3.0'), findsOneWidget);
+    await cerrar(tester, c);
+  });
 }

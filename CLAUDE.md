@@ -17,7 +17,8 @@ app/                     Flutter (web + Android). Solo interfaz y estado de pant
 - `guinote_core` no puede depender de Flutter. Toda regla vive ahí, con tests.
 - La interfaz y la IA usan la misma función de jugadas legales del motor. La interfaz nunca valida reglas por su cuenta.
 - Estado de juego inmutable, con acciones que devuelven un estado nuevo. El azar se inyecta con `Random` con semilla para poder repetir partidas en los tests.
-- Cartas dibujadas por código (`CustomPainter`), sin imágenes de terceros.
+- Cartas: imágenes de `app/assets/cartas/`, de la baraja «Naipes libres» de Basquetteur (Wikimedia Commons, CC BY-SA 3.0), generadas con `tool/recortar_cartas.sh`. La licencia obliga a mantener la atribución (README, `assets/cartas/LICENCIA.md` y menú «Créditos»). `PintorCarta` dibuja las cartas por código si una imagen no carga.
+- No uses cartas ni diseños de otras apps ni de barajas con derechos (por ejemplo, Fournier).
 
 ## Decisiones de interfaz
 - La baza completa se ve en la mesa 3 segundos y se recoge sola (el controlador llama a `recoger()`). No hay botón de recoger.

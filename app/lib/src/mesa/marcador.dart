@@ -82,13 +82,21 @@ class Marcador extends StatelessWidget {
                   ),
               ],
             ),
-            PopupMenuButton<void>(
+            PopupMenuButton<_OpcionMenu>(
               tooltip: 'Menú',
               iconColor: Colors.white,
-              itemBuilder: (_) => [
+              onSelected: (opcion) => switch (opcion) {
+                _OpcionMenu.nuevoCoto => onNuevoCoto(),
+                _OpcionMenu.creditos => mostrarCreditos(context),
+              },
+              itemBuilder: (_) => const [
                 PopupMenuItem(
-                  onTap: onNuevoCoto,
-                  child: const Text('Nuevo coto'),
+                  value: _OpcionMenu.nuevoCoto,
+                  child: Text('Nuevo coto'),
+                ),
+                PopupMenuItem(
+                  value: _OpcionMenu.creditos,
+                  child: Text('Créditos'),
                 ),
               ],
             ),
@@ -98,6 +106,26 @@ class Marcador extends StatelessWidget {
     );
   }
 }
+
+enum _OpcionMenu { nuevoCoto, creditos }
+
+/// Créditos de la app, incluida la atribución que exige la licencia de las
+/// imágenes de las cartas (CC BY-SA 3.0).
+void mostrarCreditos(BuildContext context) => showAboutDialog(
+  context: context,
+  applicationName: 'Guiñote',
+  children: const [
+    Text(
+      'Cartas: baraja «Naipes libres» de Basquetteur, en Wikimedia Commons, '
+      'con licencia Creative Commons Reconocimiento-CompartirIgual 3.0 '
+      '(CC BY-SA 3.0). Recortadas en cartas sueltas, sin otros cambios.',
+    ),
+    SizedBox(height: 8),
+    SelectableText(
+      'commons.wikimedia.org/wiki/File:Baraja_española_completa.png',
+    ),
+  ],
+);
 
 /// El símbolo de un palo como widget.
 class SimboloPalo extends StatelessWidget {

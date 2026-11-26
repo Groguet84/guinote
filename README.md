@@ -20,7 +20,7 @@ El guiñote es el juego de cartas tradicional de Aragón y Valencia. Esta versi�
   - los botones de cantar y de cambiar el 7 aparecen solo cuando se pueden usar;
   - la baza se recoge sola a los 3 segundos;
   - al acabar cada mano se muestra el recuento.
-- **Cartas dibujadas por código** con `CustomPainter`: los cuatro palos, los números, las figuras y el dorso. No usa imágenes de terceros.
+- **Baraja española ilustrada:** usa los «Naipes libres» de Basquetteur, con licencia libre (ver [Créditos](#créditos)). Las cartas se recortan con un script reproducible y, si alguna imagen no cargara, la app la dibuja por código con `CustomPainter`.
 
 ## Arquitectura
 
@@ -44,13 +44,14 @@ app/                     Flutter: pantalla, animaciones y controlador de partida
 | [`coto.dart`](packages/guinote_core/lib/src/coto.dart) | Coto al mejor de tres partidas |
 | [`ia.dart`](packages/guinote_core/lib/src/ia.dart) | Estrategia heurística |
 | [`controlador_partida.dart`](app/lib/src/juego/controlador_partida.dart) | Ritmo de la partida en pantalla |
-| [`pintor_carta.dart`](app/lib/src/cartas/pintor_carta.dart) | Baraja española dibujada por código |
+| [`pintor_carta.dart`](app/lib/src/cartas/pintor_carta.dart) | Baraja dibujada por código, de respaldo |
+| [`recortar_cartas.sh`](tool/recortar_cartas.sh) | Genera las imágenes de las cartas desde Wikimedia Commons |
 
 ## Tests
 
 ```bash
 cd packages/guinote_core && dart test     # 89 tests del motor y la IA
-cd app && flutter test                    # 16 tests del controlador y la mesa
+cd app && flutter test                    # 17 tests del controlador y la mesa
 ```
 
 - **Reglas:** hay un test por cada regla. Cubren el orden y los puntos de las cartas, el ganador de la baza, cada obligación del arrastre (incluido el caso de no tener que matar a tu compañero), los cantes, el cambio del 7, los robos, la puntuación con vueltas y el coto.
@@ -76,6 +77,16 @@ Las capturas de este README se generan con un test que usa fuentes reales y tiem
 
 ```bash
 cd app && flutter test --dart-define=CAPTURAS=true test/capturas
+```
+
+## Créditos
+
+Las imágenes de las cartas son la baraja «Naipes libres» («Baraja española completa») de **Basquetteur**, publicada en [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Baraja_espa%C3%B1ola_completa.png) con licencia [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/deed.es). Se han recortado en cartas sueltas, sin otros cambios, y se distribuyen con la misma licencia (detalles en [app/assets/cartas/LICENCIA.md](app/assets/cartas/LICENCIA.md)). La app muestra estos créditos en su menú.
+
+Para regenerarlas hacen falta `curl` e ImageMagick:
+
+```bash
+tool/recortar_cartas.sh
 ```
 
 ## Próximos pasos

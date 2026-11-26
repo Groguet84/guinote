@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:guinote_core/guinote_core.dart';
 
+import '../cartas/carta_widget.dart';
 import '../cartas/pintor_carta.dart';
 import '../juego/controlador_partida.dart';
 import 'centro_mesa.dart';
@@ -23,6 +24,16 @@ class PantallaMesa extends StatefulWidget {
 
 class _PantallaMesaState extends State<PantallaMesa> {
   late final ControladorPartida _c = widget.controlador ?? ControladorPartida();
+  bool _cartasPrecargadas = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_cartasPrecargadas) {
+      _cartasPrecargadas = true;
+      precargarCartas(context);
+    }
+  }
 
   @override
   void dispose() {

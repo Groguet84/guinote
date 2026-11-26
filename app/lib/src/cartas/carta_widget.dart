@@ -3,7 +3,22 @@ import 'package:guinote_core/guinote_core.dart';
 
 import 'pintor_carta.dart';
 
+/// Ruta de la imagen de [carta], o del dorso si es `null`.
+String rutaCarta(Carta? carta) => carta == null
+    ? 'assets/cartas/dorso.png'
+    : 'assets/cartas/${carta.valor.numero}_${carta.palo.nombre}.png';
+
+/// Carga de antemano las imágenes de la baraja para que no parpadeen la
+/// primera vez que aparecen.
+Future<void> precargarCartas(BuildContext context) => Future.wait([
+  for (final ruta in [rutaCarta(null), ...Carta.baraja.map(rutaCarta)])
+    precacheImage(AssetImage(ruta), context),
+]);
+
 /// Una carta de [ancho] dado, boca arriba (si hay [carta]) o boca abajo.
+///
+/// Usa las imágenes de la baraja «Naipes libres» (`assets/cartas/`); si una
+/// no se puede cargar, dibuja la carta por código.
 class CartaWidget extends StatelessWidget {
   const CartaWidget({
     super.key,
@@ -36,9 +51,17 @@ class CartaWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final carta = this.carta;
-    Widget dibujo = CustomPaint(
-      size: Size(ancho, alto),
-      painter: carta == null ? const PintorDorso() : PintorCarta(carta),
+    Widget dibujo = Image.asset(
+      rutaCarta(carta),
+      width: ancho,
+      height: alto,
+      fit: BoxFit.fill,
+      filterQuality: FilterQuality.medium,
+      gaplessPlayback: true,
+      errorBuilder: (_, _, _) => CustomPaint(
+        size: Size(ancho, alto),
+        painter: carta == null ? const PintorDorso() : PintorCarta(carta),
+      ),
     );
     if (atenuada) {
       dibujo = ColorFiltered(
