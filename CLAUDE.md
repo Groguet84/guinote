@@ -27,6 +27,7 @@ app/                     Flutter (web + Android). Solo interfaz y estado de pant
 - Dominio en español (`Carta`, `Palo`, `Baza`, `cantar`, `arrastre`); textos de la interfaz en español.
 - Lints estrictos (`analysis_options.yaml` de cada paquete). Sin avisos de `dart analyze`.
 - Sin dependencias nuevas salvo necesidad clara.
+- Flutter 3.47.9 / Dart 3.13.7, fijados también en `.github/workflows/`. Al actualizar Flutter, cambia la versión en los dos sitios.
 
 ## Comandos
 ```bash

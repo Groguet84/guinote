@@ -60,7 +60,7 @@ La integración continua de GitHub Actions comprueba el formato, el análisis es
 
 ## Cómo ejecutarlo
 
-Requisitos: Flutter 3.47 o posterior.
+Requisitos: Flutter 3.47.9 (la versión que usa la integración continua).
 
 ```bash
 cd app

@@ -22,6 +22,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # La misma versión que en desarrollo; se actualiza a la vez en ambos sitios.
+          flutter-version: 3.47.9
       - run: flutter pub get
       - run: flutter build apk --release
       - run: mv build/app/outputs/flutter-apk/app-release.apk build/guinote-${{ github.ref_name }}.apk
