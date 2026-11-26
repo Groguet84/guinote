@@ -18,6 +18,9 @@ import 'package:guinote_core/guinote_core.dart';
 
 const bool generar = bool.fromEnvironment('CAPTURAS');
 const ia = Ia();
+
+/// Píxeles por punto lógico de las capturas.
+const double escala = 1.5;
 final salida = Directory('../docs/capturas');
 
 Future<void> cargarFuentes() async {
@@ -47,8 +50,8 @@ Future<ControladorPartida> jugarHasta(
   int semilla,
   bool Function(ControladorPartida c) hasta,
 ) async {
-  tester.view.devicePixelRatio = 2;
-  tester.view.physicalSize = tamano * 2;
+  tester.view.devicePixelRatio = escala;
+  tester.view.physicalSize = tamano * escala;
   addTearDown(tester.view.reset);
   // Por defecto los tests dibujan las sombras como bloques negros; se
   // restaura en [cerrar], dentro del propio test.
@@ -78,7 +81,7 @@ Future<void> guardar(WidgetTester tester, String nombre) async {
     find.byKey(const ValueKey('captura')),
   );
   await tester.runAsync(() async {
-    final imagen = await limite.toImage(pixelRatio: 2);
+    final imagen = await limite.toImage(pixelRatio: escala);
     final png = await imagen.toByteData(format: ui.ImageByteFormat.png);
     salida.createSync(recursive: true);
     File('${salida.path}/$nombre.png')

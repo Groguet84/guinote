@@ -46,6 +46,6 @@ flutter test --dart-define=CAPTURAS=true test/capturas
 1. Motor de reglas y tests ✓
 2. IA de los tres jugadores del ordenador ✓
 3. Interfaz de mesa ✓
-4. Pulido: README con capturas, despliegue web, APK
+4. Pulido: README con capturas ✓, APK ✓, flujos de despliegue web y release ✓ (pendiente: subir a GitHub y activar Pages)
 
 Se trabaja fase a fase y se espera la aprobación del usuario antes de empezar la siguiente.
