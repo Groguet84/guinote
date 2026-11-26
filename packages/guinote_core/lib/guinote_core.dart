@@ -6,5 +6,7 @@ library;
 
 export 'src/carta.dart';
 export 'src/estado_mano.dart';
+export 'src/ia.dart';
 export 'src/partida.dart';
 export 'src/reglas.dart';
+export 'src/vista_jugador.dart';

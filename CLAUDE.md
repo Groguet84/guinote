@@ -41,7 +41,7 @@ flutter build apk              # Android
 ## Fases
 0. Esqueleto: repo, estructura, lints, CI ✓
 1. Motor de reglas y tests ✓
-2. IA de los tres jugadores del ordenador
+2. IA de los tres jugadores del ordenador ✓
 3. Interfaz de mesa
 4. Pulido: README con capturas, despliegue web, APK
 
