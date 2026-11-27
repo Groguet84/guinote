@@ -44,20 +44,22 @@ Future<void> cargarFuentes() async {
 }
 
 /// Monta la app a [tamano] lógico y la deja avanzar hasta que se cumpla
-/// [hasta]. El humano juega con la misma IA que el resto.
+/// [hasta]. El humano juega con la misma IA que el resto. Con [crear] se
+/// parte de un controlador preparado en vez de una partida con [semilla].
 Future<ControladorPartida> jugarHasta(
   WidgetTester tester,
   Size tamano,
   int semilla,
-  bool Function(ControladorPartida c) hasta,
-) async {
+  bool Function(ControladorPartida c) hasta, {
+  ControladorPartida Function()? crear,
+}) async {
   tester.view.devicePixelRatio = escala;
   tester.view.physicalSize = tamano * escala;
   addTearDown(tester.view.reset);
   // Por defecto los tests dibujan las sombras como bloques negros; se
   // restaura en [cerrar], dentro del propio test.
   debugDisableShadows = false;
-  final c = ControladorPartida(random: Random(semilla));
+  final c = crear?.call() ?? ControladorPartida(random: Random(semilla));
   await tester.pumpWidget(
     RepaintBoundary(
       key: const ValueKey('captura'),
@@ -130,6 +132,90 @@ void main() {
         (c) => c.mano.esArrastre && enJuego(c, bazas: 5),
       );
       await guardar(tester, 'mesa_arrastre');
+      await cerrar(tester, c);
+    });
+
+    testWidgets('montones de bazas y las 20 marcadas', (tester) async {
+      Carta k(Valor v, Palo p) => Carta(v, p);
+      final c = await jugarHasta(
+        tester,
+        const Size(1280, 800),
+        0,
+        (c) => true,
+        crear: () {
+          final c = ControladorPartida.desde(
+            coto: Coto(
+              partidasGanadas: const [0, 0],
+              partida: Partida(puntos: const [0, 0], repartidor: 3),
+            ),
+            mano: EstadoMano(
+              repartidor: 3,
+              triunfo: Palo.oros,
+              cartaTriunfo: k(Valor.seis, Palo.oros),
+              mazo: [
+                k(Valor.dos, Palo.oros),
+                k(Valor.cuatro, Palo.oros),
+                k(Valor.cinco, Palo.oros),
+              ],
+              manos: [
+                [
+                  k(Valor.rey, Palo.copas),
+                  k(Valor.sota, Palo.copas),
+                  k(Valor.as, Palo.espadas),
+                  k(Valor.cuatro, Palo.bastos),
+                  k(Valor.siete, Palo.oros),
+                  k(Valor.tres, Palo.bastos),
+                ],
+                for (final palo in [Palo.copas, Palo.espadas, Palo.bastos])
+                  [
+                    for (final v in [
+                      Valor.dos,
+                      Valor.cinco,
+                      Valor.seis,
+                      Valor.siete,
+                      Valor.caballo,
+                      Valor.cuatro,
+                    ])
+                      k(v, palo),
+                  ],
+              ],
+              turno: 0,
+              bazas: [
+                for (final (ganador, palo, valores) in [
+                  (0, Palo.oros, [Valor.as, Valor.tres, Valor.rey, Valor.sota]),
+                  (
+                    1,
+                    Palo.espadas,
+                    [Valor.tres, Valor.rey, Valor.sota, Valor.caballo],
+                  ),
+                  (
+                    2,
+                    Palo.copas,
+                    [Valor.as, Valor.tres, Valor.caballo, Valor.siete],
+                  ),
+                ])
+                  Baza(
+                    jugadas: [
+                      for (var i = 0; i < 4; i++)
+                        (
+                          jugador: (ganador + i) % 4,
+                          carta: k(valores[i], palo),
+                        ),
+                    ],
+                    ganador: ganador,
+                  ),
+              ],
+            ),
+          );
+          return c;
+        },
+      );
+      c.cantar(Palo.copas);
+      // Un fotograma para que arranque la animación del aviso y otro para
+      // que termine.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await guardar(tester, 'mesa_montones');
       await cerrar(tester, c);
     });
 

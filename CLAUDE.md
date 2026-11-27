@@ -21,8 +21,9 @@ app/                     Flutter (web + Android). Solo interfaz y estado de pant
 - No uses cartas ni diseños de otras apps ni de barajas con derechos (por ejemplo, Fournier).
 
 ## Decisiones de interfaz
-- La baza completa se ve en la mesa 3 segundos y se recoge sola (el controlador llama a `recoger()`). No hay botón de recoger.
-- Durante esos 3 segundos ya se puede cantar y cambiar el 7. Si después de robar el humano tiene un cante o el 7 disponible, la IA espera un momento antes de salir. La IA nunca canta por el humano.
+- La baza completa se ve en la mesa 2 segundos y se recoge sola (el controlador llama a `recoger()`) al montón de la pareja ganadora. No hay botón de recoger.
+- Montones de bazas: el de nuestra pareja abajo a la izquierda y el de los rivales arriba a la derecha, boca abajo. Cada cante de 20 se marca con una carta ya jugada del montón puesta boca arriba (nunca el rey ni la sota, que siguen en juego). Las 40 no se marcan.
+- Durante esos 2 segundos ya se puede cantar y cambiar el 7. Si después de robar el humano tiene un cante o el 7 disponible, la IA espera un momento antes de salir. La IA nunca canta por el humano.
 
 ## Convenciones
 - Dominio en español (`Carta`, `Palo`, `Baza`, `cantar`, `arrastre`); textos de la interfaz en español.

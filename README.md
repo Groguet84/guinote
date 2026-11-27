@@ -18,7 +18,7 @@ El guiñote es el juego de cartas tradicional de Aragón y Valencia. Esta versi�
   - en tu turno solo se pueden echar las cartas legales;
   - puedes colocar tus cartas a tu gusto arrastrándolas, u ordenarlas por palos con un botón;
   - los botones de cantar y de cambiar el 7 aparecen solo cuando se pueden usar;
-  - la baza se recoge sola a los 3 segundos;
+  - la baza se recoge sola a los 2 segundos al montón de la pareja que la gana, y cada cante de 20 se marca con una carta boca arriba en el montón;
   - al acabar cada mano se muestra el recuento.
 - **Baraja española ilustrada:** usa los «Naipes libres» de Basquetteur, con licencia libre (ver [Créditos](#créditos)). Las cartas se recortan con un script reproducible y, si alguna imagen no cargara, la app la dibuja por código con `CustomPainter`.
 
@@ -51,13 +51,13 @@ app/                     Flutter: pantalla, animaciones y controlador de partida
 
 ```bash
 cd packages/guinote_core && dart test     # 97 tests del motor y la IA
-cd app && flutter test                    # 20 tests del controlador y la mesa
+cd app && flutter test                    # 23 tests del controlador y la mesa
 ```
 
 - **Reglas:** hay un test por cada regla. Cubren el orden y los puntos de las cartas, el ganador de la baza, cada obligación del arrastre (incluido el caso de no tener que matar a tu compañero), los cantes, el cambio del 7, los robos, la puntuación con vueltas y el coto.
 - **Simulación:** se juegan 500 manos y 50 partidas al azar. En cada paso se comprueba que siempre hay alguna carta legal, que ninguna carta se pierde ni se duplica y que cada mano reparte 130 puntos más los cantes.
 - **IA:** hay tests de jugadas concretas y una prueba de fuerza contra jugadores aleatorios.
-- **Interfaz:** los tests usan temporizadores simulados. Comprueban que la baza se recoge a los 3 segundos, que el compañero espera si puedes cantar y que la IA no canta por ti.
+- **Interfaz:** los tests usan temporizadores simulados. Comprueban que la baza se recoge a los 2 segundos al montón correcto, que las 20 se marcan en el montón, que el compañero espera si puedes cantar y que la IA no canta por ti.
 
 La integración continua de GitHub Actions comprueba el formato, el análisis estático y los tests, y compila la web.
 

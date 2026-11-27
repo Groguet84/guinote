@@ -9,6 +9,7 @@ import '../juego/controlador_partida.dart';
 import 'centro_mesa.dart';
 import 'manos.dart';
 import 'marcador.dart';
+import 'monton_bazas.dart';
 import 'resumen_mano.dart';
 
 /// La mesa de juego: tú abajo, tu compañero arriba y los rivales a los lados.
@@ -81,18 +82,37 @@ class _PantallaMesaState extends State<PantallaMesa> {
       activo: mano.fase == Fase.jugando && mano.turno == jugador,
     );
 
-    Widget rival(int jugador) => SizedBox(
-      width: math.max(anchoOculta / proporcionCarta, 72),
+    final anchoLateral = math.max(anchoOculta / proporcionCarta, 72.0);
+
+    // Montón de bazas de una pareja; cabe girado en la columna lateral.
+    Widget monton(int pareja) => MontonBazas(
+      key: claveMonton(pareja),
+      nombre: nombresParejas[pareja],
+      bazas: _c.bazasEnMonton(pareja),
+      marcas: _c.marcasDeVeinte(pareja),
+      ancho: anchoLateral / 1.9,
+    );
+
+    Widget rival(int jugador, {Widget? arriba, Widget? abajo}) => SizedBox(
+      width: anchoLateral,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          etiqueta(jugador, dosLineas: true),
-          const SizedBox(height: 4),
-          ManoOculta(
-            numero: mano.manos[jugador].length,
-            ancho: anchoOculta,
-            vertical: true,
+          ?arriba,
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                etiqueta(jugador, dosLineas: true),
+                const SizedBox(height: 4),
+                ManoOculta(
+                  numero: mano.manos[jugador].length,
+                  ancho: anchoOculta,
+                  vertical: true,
+                ),
+              ],
+            ),
           ),
+          ?abajo,
         ],
       ),
     );
@@ -133,7 +153,7 @@ class _PantallaMesaState extends State<PantallaMesa> {
           Expanded(
             child: Row(
               children: [
-                rival(3),
+                rival(3, abajo: monton(0)),
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, hueco) {
@@ -190,7 +210,7 @@ class _PantallaMesaState extends State<PantallaMesa> {
                     },
                   ),
                 ),
-                rival(1),
+                rival(1, arriba: monton(1)),
               ],
             ),
           ),

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:guinote/main.dart';
 import 'package:guinote/src/juego/controlador_partida.dart';
 import 'package:guinote/src/mesa/manos.dart';
+import 'package:guinote/src/mesa/monton_bazas.dart';
 import 'package:guinote/src/mesa/pantalla_mesa.dart';
 
 Future<ControladorPartida> montar(
@@ -37,6 +38,8 @@ void main() {
     expect(find.byKey(const ValueKey('cartas-mazo')), findsOneWidget);
     expect(find.text('Triunfo: ${c.mano.triunfo.nombre}'), findsOneWidget);
     expect(find.textContaining('Nosotros'), findsWidgets);
+    expect(find.byKey(claveMonton(0)), findsOneWidget);
+    expect(find.byKey(claveMonton(1)), findsOneWidget);
     await cerrar(tester, c);
   });
 

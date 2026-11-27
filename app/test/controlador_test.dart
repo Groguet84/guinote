@@ -85,7 +85,7 @@ void main() {
     c.dispose();
   });
 
-  testWidgets('la baza completa se recoge sola a los 3 segundos', (
+  testWidgets('la baza completa se ve 2 segundos y se recoge al montón', (
     tester,
   ) async {
     final c = ControladorPartida.desde(
@@ -96,12 +96,20 @@ void main() {
         fase: Fase.bazaCompleta,
       ),
     );
+    expect(c.retardoRecoger, const Duration(seconds: 2));
     expect(c.mano.baza, hasLength(4));
-    await tester.pump(const Duration(milliseconds: 2900));
+    expect(c.bazasEnMonton(1), 0, reason: 'aún está en la mesa');
+    await tester.pump(c.retardoRecoger - const Duration(milliseconds: 100));
     expect(c.mano.fase, Fase.bazaCompleta);
     await tester.pump(const Duration(milliseconds: 200));
     expect(c.mano.fase, Fase.jugando);
     expect(c.mano.baza, isEmpty);
+    expect(
+      c.bazasEnMonton(1),
+      1,
+      reason: 'ya está en el montón de los rivales',
+    );
+    expect(c.bazasEnMonton(0), 0);
     expect(c.mano.manos.every((m) => m.length == 1), isTrue);
     c.dispose();
   });
@@ -374,6 +382,84 @@ void main() {
       expect(c.mano.bazas, isNotEmpty);
       expect(c.mano.esDeVueltas, isFalse);
       expect(c.puntosMarcador, [0, 0]);
+      c.dispose();
+    });
+  });
+
+  group('montones de bazas', () {
+    // Tu pareja ha ganado una baza (ya recogida) y tienes rey y sota de copas
+    // y de oros (triunfo).
+    ControladorPartida conCantes() => ControladorPartida.desde(
+      coto: cotoNuevo,
+      mano: trasBaza(
+        ganador: 0,
+        manos: [
+          [
+            reyCopas,
+            const Carta(Valor.sota, Palo.copas),
+            const Carta(Valor.rey, Palo.oros),
+            const Carta(Valor.sota, Palo.oros),
+          ],
+          [const Carta(Valor.dos, Palo.copas)],
+          [const Carta(Valor.cuatro, Palo.copas)],
+          [const Carta(Valor.cinco, Palo.copas)],
+        ],
+      ),
+    );
+
+    testWidgets('las 20 se marcan con una carta del montón boca arriba', (
+      tester,
+    ) async {
+      final c = conCantes();
+      expect(c.bazasEnMonton(0), 1);
+      expect(c.marcasDeVeinte(0), isEmpty);
+
+      c.cantar(Palo.copas);
+      final marcas = c.marcasDeVeinte(0);
+      expect(marcas, hasLength(1));
+      final enMonton = c.mano.bazas.single.jugadas.map((j) => j.carta);
+      expect(enMonton, contains(marcas.single), reason: 'es una carta jugada');
+      expect(
+        c.manoHumano,
+        containsAll([reyCopas, const Carta(Valor.sota, Palo.copas)]),
+        reason: 'el rey y la sota siguen en la mano',
+      );
+      c.dispose();
+    });
+
+    testWidgets('las 40 no se marcan', (tester) async {
+      final c = conCantes();
+      c.cantar(Palo.oros);
+      expect(c.mano.cantes.single.puntos, 40);
+      expect(c.marcasDeVeinte(0), isEmpty);
+      c.dispose();
+    });
+
+    testWidgets('dos veintes, dos cartas distintas boca arriba', (
+      tester,
+    ) async {
+      final c = ControladorPartida.desde(
+        coto: cotoNuevo,
+        mano: trasBaza(
+          ganador: 0,
+          manos: [
+            [
+              reyCopas,
+              const Carta(Valor.sota, Palo.copas),
+              const Carta(Valor.rey, Palo.bastos),
+              const Carta(Valor.sota, Palo.bastos),
+            ],
+            const [],
+            const [],
+            const [],
+          ],
+        ),
+      );
+      c.cantar(Palo.copas);
+      c.cantar(Palo.bastos);
+      final marcas = c.marcasDeVeinte(0);
+      expect(marcas, hasLength(2));
+      expect(marcas.toSet(), hasLength(2));
       c.dispose();
     });
   });

@@ -15,7 +15,7 @@ class ControladorPartida extends ChangeNotifier {
     Random? random,
     this._ia = const Ia(),
     this.retardoIa = const Duration(milliseconds: 900),
-    this.retardoRecoger = const Duration(seconds: 3),
+    this.retardoRecoger = const Duration(seconds: 2),
     this.esperaAnuncio = const Duration(milliseconds: 2500),
     this.duracionAviso = const Duration(milliseconds: 3500),
   }) : _random = random ?? Random() {
@@ -31,7 +31,7 @@ class ControladorPartida extends ChangeNotifier {
     Random? random,
     this._ia = const Ia(),
     this.retardoIa = const Duration(milliseconds: 900),
-    this.retardoRecoger = const Duration(seconds: 3),
+    this.retardoRecoger = const Duration(seconds: 2),
     this.esperaAnuncio = const Duration(milliseconds: 2500),
     this.duracionAviso = const Duration(milliseconds: 3500),
   }) : _random = random ?? Random() {
@@ -80,6 +80,34 @@ class ControladorPartida extends ChangeNotifier {
   /// Puntos que muestra el marcador. De vueltas se cuentan en directo: lo
   /// que llevaba cada pareja más lo ganado en esta mano. En la ida no se
   /// muestra lo de la mano hasta que se acaba.
+  /// Bazas que [pareja] tiene ya en su montón. La baza que aún se ve en la
+  /// mesa no cuenta hasta que se recoge.
+  int bazasEnMonton(int pareja) => _bazasEnMonton(pareja).length;
+
+  /// Cartas del montón de [pareja] puestas boca arriba para marcar sus
+  /// cantes de 20, una por cante. Son cartas ya jugadas (nunca el rey ni la
+  /// sota del cante, que siguen en juego). Las 40 no se marcan.
+  List<Carta> marcasDeVeinte(int pareja) {
+    final veintes = _mano.cantes
+        .where((c) => parejaDe(c.jugador) == pareja && c.puntos == 20)
+        .length;
+    final cartas = [
+      for (final b in _bazasEnMonton(pareja)) ...b.jugadas.map((j) => j.carta),
+    ];
+    return cartas.take(veintes).toList();
+  }
+
+  List<Baza> _bazasEnMonton(int pareja) {
+    final enMesa = _mano.baza.length == numJugadores;
+    final recogidas = enMesa
+        ? _mano.bazas.take(_mano.bazas.length - 1)
+        : _mano.bazas;
+    return [
+      for (final b in recogidas)
+        if (parejaDe(b.ganador) == pareja) b,
+    ];
+  }
+
   List<int> get puntosMarcador {
     if (_resultado != null || !_mano.esDeVueltas) return partida.puntos;
     final enJuego = _mano.puntosEnJuego;
