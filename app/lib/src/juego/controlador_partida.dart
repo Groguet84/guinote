@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:guinote_core/guinote_core.dart';
 
+import 'jugadores.dart';
+
 /// Conecta el motor con la pantalla: guarda el coto y la mano en curso,
 /// hace jugar a la IA con pausas para que se vea y recoge las bazas solas.
 /// También guarda el orden en que el humano tiene colocadas sus cartas.
@@ -11,14 +13,18 @@ import 'package:guinote_core/guinote_core.dart';
 /// El humano es siempre el jugador [humano] (abajo); su compañero es el 2.
 class ControladorPartida extends ChangeNotifier {
   /// Empieza un coto nuevo.
+  ///
+  /// Si no se dan [jugadores], se sortean (y tú te llamas «Tú»).
   ControladorPartida({
     Random? random,
+    List<Jugador>? jugadores,
     this._ia = const Ia(),
     this.retardoIa = const Duration(milliseconds: 900),
     this.retardoRecoger = const Duration(seconds: 2),
     this.esperaAnuncio = const Duration(milliseconds: 2500),
     this.duracionAviso = const Duration(milliseconds: 3500),
-  }) : _random = random ?? Random() {
+  }) : _random = random ?? Random(),
+       jugadores = jugadores ?? sortearJugadores(Random()) {
     _coto = Coto.nuevo(_random);
     _repartir();
   }
@@ -29,12 +35,14 @@ class ControladorPartida extends ChangeNotifier {
     required this._coto,
     required EstadoMano mano,
     Random? random,
+    List<Jugador>? jugadores,
     this._ia = const Ia(),
     this.retardoIa = const Duration(milliseconds: 900),
     this.retardoRecoger = const Duration(seconds: 2),
     this.esperaAnuncio = const Duration(milliseconds: 2500),
     this.duracionAviso = const Duration(milliseconds: 3500),
-  }) : _random = random ?? Random() {
+  }) : _random = random ?? Random(),
+       jugadores = jugadores ?? sortearJugadores(Random(0)) {
     _mano = mano;
     _orden = ordenarPorPalo(mano.manos[humano]);
     _programar();
@@ -42,12 +50,11 @@ class ControladorPartida extends ChangeNotifier {
 
   static const int humano = 0;
 
-  static const List<String> nombres = [
-    'Tú',
-    'Rival derecho',
-    'Compañero',
-    'Rival izquierdo',
-  ];
+  /// Los cuatro jugadores, por asiento: tú, el rival de la derecha, tu
+  /// compañero y el rival de la izquierda.
+  final List<Jugador> jugadores;
+
+  String nombre(int jugador) => jugadores[jugador].nombre;
 
   /// Pausa antes de que eche carta un jugador del ordenador.
   final Duration retardoIa;
@@ -120,7 +127,7 @@ class ControladorPartida extends ChangeNotifier {
   /// Recuento de la mano recién terminada; `null` mientras se juega.
   ResultadoMano? get resultado => _resultado;
 
-  /// Último aviso de la mesa («Compañero canta las 40»), si sigue visible.
+  /// Último aviso de la mesa («Pilar canta las 40»), si sigue visible.
   String? get aviso => _aviso;
 
   List<Carta> get jugablesHumano => _mano.jugadasLegalesDe(humano);
@@ -194,8 +201,8 @@ class ControladorPartida extends ChangeNotifier {
     notifyListeners();
   }
 
-  static String textoCante(int jugador, Cante cante) {
-    final quien = jugador == humano ? 'Cantas' : '${nombres[jugador]} canta';
+  String textoCante(int jugador, Cante cante) {
+    final quien = jugador == humano ? 'Cantas' : '${nombre(jugador)} canta';
     return cante.puntos == 40
         ? '$quien las 40'
         : '$quien las 20 en ${cante.palo.nombre}';
@@ -206,12 +213,14 @@ class ControladorPartida extends ChangeNotifier {
     _resultado = null;
     _mano = _coto.repartir(_random);
     _orden = ordenarPorPalo(_mano.manos[humano]);
-    final quien = nombres[_mano.repartidor];
+    final reparte = _mano.repartidor == humano
+        ? 'repartes'
+        : 'reparte ${nombre(_mano.repartidor)}';
     final numero = _coto.partidasGanadas.reduce((a, b) => a + b) + 1;
     _avisar(switch (partida) {
-      Partida(deVueltas: true) => 'De vueltas · reparte $quien',
-      _ when numero > 1 => 'Partida $numero del coto · reparte $quien',
-      _ => 'Reparte $quien',
+      Partida(deVueltas: true) => 'De vueltas · $reparte',
+      _ when numero > 1 => 'Partida $numero del coto · $reparte',
+      _ => '${reparte[0].toUpperCase()}${reparte.substring(1)}',
     });
     notifyListeners();
     _programar();
@@ -299,7 +308,7 @@ class ControladorPartida extends ChangeNotifier {
         _mano = _ia.anunciar(_mano, j);
       }
       if (_mano.cartaTriunfo != antes.cartaTriunfo) {
-        avisos.add('${nombres[j]} cambia el 7');
+        avisos.add('${nombre(j)} cambia el 7');
       }
       for (final cante in _mano.cantes.skip(antes.cantes.length)) {
         avisos.add(textoCante(j, cante));
@@ -311,7 +320,7 @@ class ControladorPartida extends ChangeNotifier {
   void _avisarGanadorBaza() {
     final ganador = _mano.ultimoGanador!;
     _avisar(
-      ganador == humano ? 'Ganas la baza' : 'Gana la baza: ${nombres[ganador]}',
+      ganador == humano ? 'Ganas la baza' : 'Gana la baza: ${nombre(ganador)}',
     );
   }
 

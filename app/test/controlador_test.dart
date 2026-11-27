@@ -165,7 +165,7 @@ void main() {
     );
     expect(c.mano.cartaTriunfo, sieteOros);
     expect(c.mano.manos[1], [asOros]);
-    expect(c.aviso, 'Rival derecho cambia el 7');
+    expect(c.aviso, '${c.nombre(1)} cambia el 7');
     c.dispose();
   });
 

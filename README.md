@@ -5,6 +5,8 @@ El guiñote es el juego de cartas tradicional de Aragón y Valencia. Esta versi�
 ![Mesa de juego en escritorio](docs/capturas/mesa_escritorio.png)
 
 <p align="center">
+  <img src="docs/capturas/inicio.png" alt="Pantalla de inicio: eliges tu nombre y tu avatar" width="400">
+  &nbsp;
   <img src="docs/capturas/mesa_movil.png" alt="Mesa de juego en móvil" width="280">
   &nbsp;
   <img src="docs/capturas/mesa_arrastre.png" alt="Arrastre: solo se puede echar el triunfo que mata" width="520">
@@ -14,6 +16,7 @@ El guiñote es el juego de cartas tradicional de Aragón y Valencia. Esta versi�
 
 - **Las reglas completas del guiñote aragonés**, especificadas en [REGLAS.md](REGLAS.md): reparto, robos, obligaciones del arrastre, cantes de 20 y 40, cambio del 7 de triunfo, diez de últimas, malas y buenas, manos de vueltas (con los puntos en directo y fin inmediato al llegar a 51 buenas) y cotos al mejor de tres partidas.
 - **Una IA para los otros tres jugadores.** Carga puntos a su compañero, mata con la carta más barata, guarda los triunfos y las parejas de rey y sota, y en el arrastre cuenta las cartas. Gana más del 75 % de las partidas a jugadores aleatorios.
+- **Jugadores con nombre y cara:** al empezar eliges tu nombre y tu avatar. Los otros tres reciben nombres al azar y avatares dibujados por código.
 - **Una interfaz adaptable** a escritorio y móvil:
   - en tu turno solo se pueden echar las cartas legales;
   - puedes colocar tus cartas a tu gusto arrastrándolas, u ordenarlas por palos con un botón;
@@ -51,7 +54,7 @@ app/                     Flutter: pantalla, animaciones y controlador de partida
 
 ```bash
 cd packages/guinote_core && dart test     # 97 tests del motor y la IA
-cd app && flutter test                    # 23 tests del controlador y la mesa
+cd app && flutter test                    # 27 tests del controlador, la mesa y los jugadores
 ```
 
 - **Reglas:** hay un test por cada regla. Cubren el orden y los puntos de las cartas, el ganador de la baza, cada obligación del arrastre (incluido el caso de no tener que matar a tu compañero), los cantes, el cambio del 7, los robos, la puntuación con vueltas y el coto.

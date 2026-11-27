@@ -13,7 +13,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:guinote/main.dart';
 import 'package:guinote/src/cartas/carta_widget.dart';
+import 'package:guinote/src/inicio/pantalla_inicio.dart';
 import 'package:guinote/src/juego/controlador_partida.dart';
+import 'package:guinote/src/juego/jugadores.dart';
 import 'package:guinote/src/mesa/pantalla_mesa.dart';
 import 'package:guinote_core/guinote_core.dart';
 
@@ -59,11 +61,16 @@ Future<ControladorPartida> jugarHasta(
   // Por defecto los tests dibujan las sombras como bloques negros; se
   // restaura en [cerrar], dentro del propio test.
   debugDisableShadows = false;
-  final c = crear?.call() ?? ControladorPartida(random: Random(semilla));
+  final c =
+      crear?.call() ??
+      ControladorPartida(
+        random: Random(semilla),
+        jugadores: jugadoresDeCaptura(),
+      );
   await tester.pumpWidget(
     RepaintBoundary(
       key: const ValueKey('captura'),
-      child: GuinoteApp(mesa: PantallaMesa(controlador: c)),
+      child: GuinoteApp(inicio: PantallaMesa(controlador: c)),
     ),
   );
   // Las imágenes de las cartas se cargan fuera del reloj simulado.
@@ -82,6 +89,12 @@ Future<ControladorPartida> jugarHasta(
   await tester.pump(const Duration(seconds: 1));
   return c;
 }
+
+/// Jugadores fijos para que las capturas siempre salgan iguales.
+List<Jugador> jugadoresDeCaptura() => sortearJugadores(
+  Random(3),
+  tu: Jugador('Marta', Avatar.aleatorio(Random(2))),
+);
 
 Future<void> guardar(WidgetTester tester, String nombre) async {
   final limite = tester.renderObject<RenderRepaintBoundary>(
@@ -112,6 +125,24 @@ void main() {
   });
 
   group('Capturas', skip: !generar, () {
+    testWidgets('inicio', (tester) async {
+      tester.view.devicePixelRatio = escala;
+      tester.view.physicalSize = const Size(1280, 800) * escala;
+      addTearDown(tester.view.reset);
+      debugDisableShadows = false;
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: const ValueKey('captura'),
+          child: GuinoteApp(inicio: PantallaInicio(random: Random(2))),
+        ),
+      );
+      await tester.enterText(find.byType(TextField), 'Marta');
+      await tester.pump(const Duration(seconds: 1));
+      await guardar(tester, 'inicio');
+      await tester.pumpWidget(const SizedBox());
+      debugDisableShadows = true;
+    });
+
     testWidgets('escritorio', (tester) async {
       final c = await jugarHasta(tester, const Size(1280, 800), 11, enJuego);
       await guardar(tester, 'mesa_escritorio');
@@ -150,6 +181,7 @@ void main() {
         (c) => true,
         crear: () {
           final c = ControladorPartida.desde(
+            jugadores: jugadoresDeCaptura(),
             coto: Coto(
               partidasGanadas: const [0, 0],
               partida: Partida(puntos: const [0, 0], repartidor: 3),

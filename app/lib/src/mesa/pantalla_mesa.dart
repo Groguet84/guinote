@@ -6,25 +6,38 @@ import 'package:guinote_core/guinote_core.dart';
 import '../cartas/carta_widget.dart';
 import '../cartas/pintor_carta.dart';
 import '../juego/controlador_partida.dart';
+import '../juego/jugadores.dart';
+import 'avatar.dart';
 import 'centro_mesa.dart';
 import 'manos.dart';
 import 'marcador.dart';
 import 'monton_bazas.dart';
 import 'resumen_mano.dart';
 
+/// Fondo verde de la mesa, también en la pantalla de inicio.
+const BoxDecoration tapete = BoxDecoration(
+  gradient: RadialGradient(
+    radius: 1.2,
+    colors: [Color(0xFF2E7D45), Color(0xFF14522A), Color(0xFF0B3319)],
+  ),
+);
+
 /// La mesa de juego: tú abajo, tu compañero arriba y los rivales a los lados.
 class PantallaMesa extends StatefulWidget {
-  const PantallaMesa({super.key, this.controlador});
+  const PantallaMesa({super.key, this.controlador, this.jugadores});
 
-  /// Si no se da, la pantalla crea uno con una partida nueva.
+  /// Si no se da, la pantalla crea uno con una partida nueva entre
+  /// [jugadores].
   final ControladorPartida? controlador;
+  final List<Jugador>? jugadores;
 
   @override
   State<PantallaMesa> createState() => _PantallaMesaState();
 }
 
 class _PantallaMesaState extends State<PantallaMesa> {
-  late final ControladorPartida _c = widget.controlador ?? ControladorPartida();
+  late final ControladorPartida _c =
+      widget.controlador ?? ControladorPartida(jugadores: widget.jugadores);
   bool _cartasPrecargadas = false;
 
   @override
@@ -46,12 +59,7 @@ class _PantallaMesaState extends State<PantallaMesa> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            radius: 1.2,
-            colors: [Color(0xFF2E7D45), Color(0xFF14522A), Color(0xFF0B3319)],
-          ),
-        ),
+        decoration: tapete,
         child: SafeArea(
           child: ListenableBuilder(
             listenable: _c,
@@ -84,10 +92,11 @@ class _PantallaMesaState extends State<PantallaMesa> {
     final anchoOculta = base * 0.62;
     final resultado = _c.resultado;
 
-    Widget etiqueta(int jugador, {bool dosLineas = false}) => _EtiquetaJugador(
-      nombre: dosLineas
-          ? ControladorPartida.nombres[jugador].replaceFirst(' ', '\n')
-          : ControladorPartida.nombres[jugador],
+    final tamanoAvatar = (base * 0.5).clamp(28.0, 56.0);
+    Widget etiqueta(int jugador, {bool vertical = false}) => _EtiquetaJugador(
+      jugador: _c.jugadores[jugador],
+      tamanoAvatar: tamanoAvatar,
+      vertical: vertical,
       activo: mano.fase == Fase.jugando && mano.turno == jugador,
     );
 
@@ -122,7 +131,7 @@ class _PantallaMesaState extends State<PantallaMesa> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    etiqueta(jugador, dosLineas: true),
+                    etiqueta(jugador, vertical: true),
                     const SizedBox(height: 4),
                     ManoOculta(
                       numero: mano.manos[jugador].length,
@@ -243,7 +252,11 @@ class _PantallaMesaState extends State<PantallaMesa> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _EtiquetaJugador(
-                nombre: _c.turnoHumano ? 'Tú · te toca' : 'Tú',
+                jugador: _c.jugadores[ControladorPartida.humano],
+                tamanoAvatar: tamanoAvatar,
+                texto: _c.turnoHumano
+                    ? '${_c.nombre(ControladorPartida.humano)} · te toca'
+                    : null,
                 activo: _c.turnoHumano,
               ),
               IconButton(
@@ -326,17 +339,45 @@ class _Acciones extends StatelessWidget {
   }
 }
 
+/// Avatar y nombre de un jugador; se iluminan cuando le toca.
 class _EtiquetaJugador extends StatelessWidget {
-  const _EtiquetaJugador({required this.nombre, required this.activo});
+  const _EtiquetaJugador({
+    required this.jugador,
+    required this.tamanoAvatar,
+    required this.activo,
+    this.texto,
+    this.vertical = false,
+  });
 
-  final String nombre;
+  final Jugador jugador;
+  final double tamanoAvatar;
   final bool activo;
 
-  @override
-  Widget build(BuildContext context) =>
-      FittedBox(fit: BoxFit.scaleDown, child: _contenido());
+  /// Texto en lugar del nombre («Marta · te toca»).
+  final String? texto;
 
-  Widget _contenido() => AnimatedContainer(
+  /// Con el avatar encima del nombre en vez de al lado.
+  final bool vertical;
+
+  @override
+  Widget build(BuildContext context) => FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Flex(
+      direction: vertical ? Axis.vertical : Axis.horizontal,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AvatarJugador(
+          avatar: jugador.avatar,
+          tamano: tamanoAvatar,
+          activo: activo,
+        ),
+        const SizedBox.square(dimension: 4),
+        _nombre(),
+      ],
+    ),
+  );
+
+  Widget _nombre() => AnimatedContainer(
     duration: const Duration(milliseconds: 200),
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
     decoration: BoxDecoration(
@@ -344,7 +385,7 @@ class _EtiquetaJugador extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
     ),
     child: Text(
-      nombre,
+      texto ?? jugador.nombre,
       textAlign: TextAlign.center,
       softWrap: false,
       style: TextStyle(
