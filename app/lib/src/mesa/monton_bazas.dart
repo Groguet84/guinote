@@ -45,11 +45,16 @@ class MontonBazas extends StatelessWidget {
     -0.15,
   ];
 
+  /// Lado del cuadrado que ocupa un montón con cartas de [ancho]: cabe una
+  /// carta girada en cualquier ángulo.
+  static double ladoPara(double ancho) {
+    final alto = ancho / proporcionCarta;
+    return math.sqrt(ancho * ancho + alto * alto);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final alto = ancho / proporcionCarta;
-    // Cuadrado: cabe la carta girada en cualquier ángulo.
-    final lado = math.sqrt(ancho * ancho + alto * alto);
+    final lado = ladoPara(ancho);
     return Semantics(
       label:
           '$nombre: $bazas ${bazas == 1 ? 'baza' : 'bazas'}'

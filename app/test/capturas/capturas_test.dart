@@ -118,6 +118,12 @@ void main() {
       await cerrar(tester, c);
     });
 
+    testWidgets('pantalla grande', (tester) async {
+      final c = await jugarHasta(tester, const Size(1920, 970), 11, enJuego);
+      await guardar(tester, 'mesa_pantalla_grande');
+      await cerrar(tester, c);
+    });
+
     testWidgets('móvil', (tester) async {
       final c = await jugarHasta(tester, const Size(400, 860), 5, enJuego);
       await guardar(tester, 'mesa_movil');

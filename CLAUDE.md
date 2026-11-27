@@ -22,6 +22,7 @@ app/                     Flutter (web + Android). Solo interfaz y estado de pant
 
 ## Decisiones de interfaz
 - La baza completa se ve en la mesa 2 segundos y se recoge sola (el controlador llama a `recoger()`) al montón de la pareja ganadora. No hay botón de recoger.
+- La mesa no pasa de 1,5 veces el alto de la ventana: en pantallas muy anchas queda centrada, con fondo a los lados, para que los jugadores no se separen. Hay una captura a 1920×970 para comprobarlo.
 - Montones de bazas: el de nuestra pareja abajo a la izquierda y el de los rivales arriba a la derecha, boca abajo. Cada cante de 20 se marca con una carta ya jugada del montón puesta boca arriba (nunca el rey ni la sota, que siguen en juego). Las 40 no se marcan.
 - Durante esos 2 segundos ya se puede cantar y cambiar el 7. Si después de robar el humano tiene un cante o el 7 disponible, la IA espera un momento antes de salir. La IA nunca canta por el humano.
 

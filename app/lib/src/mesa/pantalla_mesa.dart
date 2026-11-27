@@ -64,9 +64,18 @@ class _PantallaMesaState extends State<PantallaMesa> {
     );
   }
 
-  Widget _mesa(Size tamano) {
+  /// La mesa no pasa de este ancho respecto al alto: en ventanas muy anchas
+  /// los jugadores quedan agrupados alrededor del centro y sobra fondo a los
+  /// lados.
+  static const double _proporcionMaxima = 1.5;
+
+  Widget _mesa(Size ventana) {
+    final tamano = Size(
+      math.min(ventana.width, ventana.height * _proporcionMaxima),
+      ventana.height,
+    );
     final mano = _c.mano;
-    final base = (tamano.shortestSide / 7.2).clamp(40.0, 96.0);
+    final base = (tamano.shortestSide / 7.2).clamp(40.0, 120.0);
     final anchoHumano = [
       base * 1.3,
       (tamano.width - 24) / 6.4,
@@ -82,7 +91,14 @@ class _PantallaMesaState extends State<PantallaMesa> {
       activo: mano.fase == Fase.jugando && mano.turno == jugador,
     );
 
-    final anchoLateral = math.max(anchoOculta / proporcionCarta, 72.0);
+    // Los montones, con cartas del tamaño de las manos ocultas, ocupan un
+    // cuadrado en el que caben girados.
+    final ladoMonton = MontonBazas.ladoPara(anchoOculta);
+    final anchoLateral = [
+      anchoOculta / proporcionCarta,
+      72.0,
+      ladoMonton,
+    ].reduce(math.max);
 
     // Montón de bazas de una pareja; cabe girado en la columna lateral.
     Widget monton(int pareja) => MontonBazas(
@@ -90,7 +106,7 @@ class _PantallaMesaState extends State<PantallaMesa> {
       nombre: nombresParejas[pareja],
       bazas: _c.bazasEnMonton(pareja),
       marcas: _c.marcasDeVeinte(pareja),
-      ancho: anchoLateral / 1.9,
+      ancho: anchoOculta,
     );
 
     Widget rival(int jugador, {Widget? arriba, Widget? abajo}) => SizedBox(
@@ -98,18 +114,24 @@ class _PantallaMesaState extends State<PantallaMesa> {
       child: Column(
         children: [
           ?arriba,
+          // Si no cabe junto al montón, la mano del rival encoge.
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                etiqueta(jugador, dosLineas: true),
-                const SizedBox(height: 4),
-                ManoOculta(
-                  numero: mano.manos[jugador].length,
-                  ancho: anchoOculta,
-                  vertical: true,
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    etiqueta(jugador, dosLineas: true),
+                    const SizedBox(height: 4),
+                    ManoOculta(
+                      numero: mano.manos[jugador].length,
+                      ancho: anchoOculta,
+                      vertical: true,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
           ?abajo,
@@ -247,7 +269,11 @@ class _PantallaMesaState extends State<PantallaMesa> {
 
     return Stack(
       children: [
-        Positioned.fill(child: mesa),
+        Positioned.fill(
+          child: Center(
+            child: SizedBox(width: tamano.width, child: mesa),
+          ),
+        ),
         if (resultado != null) ...[
           const ModalBarrier(color: Color(0x88000000), dismissible: false),
           Center(
